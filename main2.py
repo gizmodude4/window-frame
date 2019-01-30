@@ -23,8 +23,8 @@ class Window:
 class Music:
   def __init__(self, songs, fade_in, fade_out):
     self.songs = songs
-    self.fade_in = fade_in
-    self.fade_out = fade_out
+    self.fade_in = fade_in or 0
+    self.fade_out = fade_out or 0
 
 
 class Effect:
@@ -54,12 +54,12 @@ def parse_config(config_path):
 
 def load_songs(music):
   playlist = pydub.AudioSegment.empty()
-  for song in music['songs']:
+  for song in music.songs:
     audio = pydub.AudioSegment.from_file(song)
-    if 'fadeIn' in music:
-      audio.fade_in(music['fadeIn'])
-    if 'fadeOut' in music:
-      audio.fade_in(music['fadeOut'])
+    if music.fade_in > 0:
+      audio.fade_in(music.fade_in)
+    if music.fade_out:
+      audio.fade_in(music.fade_out)
     playlist += audio
   return playlist
 
