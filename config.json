@@ -1,0 +1,26 @@
+{
+  "windows": [
+    {
+      "image": "assets/landscape.gif",
+      "music": {
+        "songs":  [
+          "assets/songs/ahhhohhh.mp3",
+          "assets/songs/cuccoo_follow.mp3",
+          "assets/songs/OOT_AdultLink_Scream1.wav"
+        ],
+        "fadeIn": 500,
+        "fadeOut": 3000
+      },
+      "effects": [
+        {
+          "name": "rain",
+          "image": "assets/landscape.gif",
+          "overlayAudio": {
+            "audio": "assets/songs/rain.mp3",
+            "volume": "0.5"
+          }
+        }
+      ]
+    }
+  ]
+}
