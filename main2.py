@@ -5,6 +5,7 @@ import json
 import pydub
 import pyglet
 import sys
+import threading
 
 from pyglet.gl import *
 from pydub.playback import play
@@ -85,11 +86,14 @@ def main():
     (size_x, size_y) = display.get_size()
     sprite.scale_x = size_x/float(sprite.width)
     sprite.scale_y = size_y/float(sprite.height)
-    play(load_songs(current_window.music))
+    base_audio = threading.Thread(target=play, args=load_songs(current_window.music))
+    base_audio.start()
 
     @display.event
     def on_draw():
-        sprite.draw()
+      sprite.draw()
+      if not base_audio.is_alive():
+        base_audio.start()
     pyglet.app.run()
 
 if __name__ == "__main__":
