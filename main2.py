@@ -23,11 +23,24 @@ def load_song(path):
     return audio
 
 
+def load_animation_from_path(path, size_x, size_y):
+    images = []
+    for file_name in os.listdir(path):
+        image = pygletpygame.image.load(path + os.sep + file_name).convert()
+        image = pygame.transform.scale(image, (screen_info.current_w, screen_info.current_h))
+        images.append(image)
+    return images
+
+
 def main():
     glEnable(GL_TEXTURE_2D)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     window = pyglet.window.Window(fullscreen=True)
-    sprite = pyglet.sprite.Sprite(pyglet.resource.animation('assets/landscape.gif'))
+    
+    animation = pyglet.resource.animation('assets/landscape.gif')
+    bin = pyglet.image.atlas.TextureBin()
+    animation.add_to_texture_bin(bin)
+    sprite = pyglet.sprite.Sprite(animation)
     (size_x, size_y) = window.get_size()
     sprite.scale_x = size_x/float(sprite.width)
     sprite.scale_y = size_y/float(sprite.height)
@@ -35,7 +48,6 @@ def main():
 
     @window.event
     def on_draw():
-        window.clear()
         sprite.draw()
     pyglet.app.run()
 
