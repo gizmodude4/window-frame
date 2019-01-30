@@ -86,7 +86,8 @@ def main():
     (size_x, size_y) = display.get_size()
     sprite.scale_x = size_x/float(sprite.width)
     sprite.scale_y = size_y/float(sprite.height)
-    base_audio = threading.Thread(target=play, args=load_songs(current_window.music))
+    songs = load_songs(current_window.music)
+    base_audio = threading.Thread(target=play, args=(songs,))
     base_audio.start()
 
     @display.event
