@@ -1,0 +1,30 @@
+{
+    "scenes": [
+        {
+            "image": "../../assets/landscape.gif",
+            "songs": [
+                {
+                    "link": "../../assets/songs/ahhhohhh.mp3",
+                    "volume": 50,
+                    "fadeDuration": 2000
+                },
+                {
+                    "link": "../../assets/songs/cuccoo_follow.mp3",
+                    "volume": 100,
+                    "fadeDuration": 2000
+                },
+                {
+                    "link": "../../assets/songs/OOT_AdultLink_Scream1.wav",
+                    "volume": 50,
+                    "fadeDuration": 2000
+                }
+            ],
+            "effects": [
+                {
+                    "link": "../../assets/songs/Rain-sound-loop.wav",
+                    "volume": 50
+                }
+            ]
+        }
+    ]
+}
