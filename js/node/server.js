@@ -50,7 +50,6 @@ stdin.setEncoding( 'utf8' );
 var app = express();
 
 app.get('/scenes', function(req, res) {
-    res.setHeader("Access-Control-Allow-Origin", "*")
     res.send(config);
 })
 

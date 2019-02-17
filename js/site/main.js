@@ -1,118 +1,57 @@
-const DEFAULT_MUSIC_VOLUME = 50;
-const DEFAULT_SOUND_EFFECT_VOLUME = 75;
+import WindowFrame from "./WindowFrame.js";
+import SceneAudio from "./SceneAudio.js";
+import Scene from "./Scene.js";
+
 var music = document.getElementById("music");
-var atmosphere = document.getElementById("atmosphere");
+var effect = document.getElementById("effect");
 var display = document.getElementById("background");
 
-var config;
-
-var sceneIndex = 0;
-var songIndex = 0;
-var effectIndex = undefined;
+var windowFrame;
 
 music.addEventListener("ended", function() {
-    var scene = getCurrentScene();
-    songIndex++;
-    if (songIndex >= scene["songs"].length) {
-        songIndex = 0;
-    }
-    var song = scene["songs"][songIndex]
-    setTimeout(function() {
-        playSong(songIndex);
-    }, song["fadeDuration"] || 0);
+    windowFrame.playNextSong();
 });
 
-atmosphere.addEventListener("ended", function() {
-    atmosphere.play();
+effect.addEventListener("ended", function() {
+    effect.play();
 })
 
-function playSong(songIndex) {
-    var scene = getCurrentScene();
-    var song = scene["songs"][songIndex];
-    playAudio(music, song["link"], song["volume"] || DEFAULT_MUSIC_VOLUME, song["fadeDuration"] || 0);
-}
-
-function playEffect(effectIndex) {
-    var scene = getCurrentScene();
-    var effect = scene["effects"][effectIndex];
-    playAudio(atmosphere, effect["link"], effect["volume"] || DEFAULT_SOUND_EFFECT_VOLUME, effect["fadeDuration"] || 0);
-}
-
-function stopAudio(tag) {
-    tag.pause();
-}
-
-function playAudio(tag, song, volume, fadeDuration) {
-    tag.src = song;
-    tag.load();
-    tag.onloadedmetadata = function() {
-        if (tag.duration > (fadeDuration * 2)/1000) {
-            tag.volume = 0.0;
-            var fadeIn = setInterval(function() {
-                if (tag.volume >= volume/100 - 0.01) {
-                    tag.volume = volume/100;
-                    clearInterval(fadeIn);
-                } else {
-                    tag.volume += 0.01;
-                }
-                
-            }, fadeDuration/100);
-
-            var fadeOut = setInterval(function() {
-                if (tag.currentTime <= (tag.duration - fadeDuration)) {
-                    if (tag.volume <= 0.01) {
-                        clearInterval(fadeOut)
-                    } else {
-                        tag.volume -= 0.01;
-                    }
-                }
-            }, fadeDuration/100);
-        }
-        tag.play();
-    }
-}
-
-function getCurrentScene() {
-    return config["scenes"][sceneIndex];
-}
-
-function setCurrentWindow() {
-    var scene = getCurrentScene();
-    background.style.backgroundImage = "url(" + scene["image"] + ")";
-    songIndex = 0;
-    playSong(songIndex);
-}
-
-function getConfigListener() {
-    config = JSON.parse(this.responseText);
+function getScenesListener() {
+    var scenes = parseScenes(JSON.parse(this.responseText));
+    windowFrame = new WindowFrame(scenes, display, music, effect)
+    windowFrame.showScene(0);
     var socket = new WebSocket("ws://localhost:9090");
     socket.onmessage = handleSocketMessage;
-    setCurrentWindow();
 }
 
-function switchEffect() {
-    var scene = getCurrentScene();
-    if (scene["effects"].length > 0) {
-        if (typeof effectIndex === 'undefined') {
-            effectIndex = 0;
-        } else {
-            effectIndex++;
-        }
-        
-        if (effectIndex >= scene["effects"].length) {
-            effectIndex = undefined;
-            stopAudio(atmosphere);
-        } else {
-            playEffect(effectIndex);
-        }
-    }
+function parseScenes(sceneConfigs) {
+    var scenes = [];
+    sceneConfigs["scenes"].forEach(function(sceneConfig) {
+        var songs = [];
+        var effects = [];
+        sceneConfig["songs"].forEach(function(songConfig){
+            songs.push(new SceneAudio(songConfig["link"], songConfig["volume"], songConfig["fadeDuration"]))
+        });
+
+        sceneConfig["effects"].forEach(function(effectConfig){
+            effects.push(new SceneAudio(effectConfig["link"], effectConfig["volume"], effectConfig["fadeDuration"]))
+        });
+        scenes.push(new Scene(sceneConfig["image"], songs, effects));
+    });
+    return scenes;
 }
 
 function handleSocketMessage(event) {
     switch(event.data) {
         case "switch_effect":
-            switchEffect();
+            windowFrame.playNextEffect();
             break;
+        case "switch_song":
+            windowFrame.playNextSong();
+            break;
+        case "switch_scene":
+            windowFrame.showNextScene();
+            break;    
         default:
             console.log("Unknown socket message type: " + event.data);
             break;
@@ -120,6 +59,6 @@ function handleSocketMessage(event) {
 }
 
 var oReq = new XMLHttpRequest();
-oReq.addEventListener("load", getConfigListener);
-oReq.open("GET", "http://localhost:8080/config");
+oReq.addEventListener("load", getScenesListener);
+oReq.open("GET", "http://localhost:8080/scenes");
 oReq.send();
