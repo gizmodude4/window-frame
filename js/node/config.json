@@ -25,6 +25,48 @@
                     "volume": 50
                 }
             ]
+        },
+        {
+            "image": "../../assets/space.gif",
+            "songs": [
+                {
+                    "link": "../../assets/songs/Crunk Knight.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000
+                },
+                {
+                    "link": "../../assets/songs/Tired of Wandering - Wandering from Tired.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000
+                }
+            ],
+            "effects": [
+                {
+                    "link": "../../assets/songs/Rain-sound-loop.wav",
+                    "volume": 100
+                }
+            ]
+        },
+        {
+            "image": "../../assets/alley.gif",
+            "songs": [
+                {
+                    "link": "../../assets/songs/cyberpunk1.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000
+                },
+                {
+                    "link": "../../assets/songs/cyberpunk2.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000
+                }
+            ],
+            "effects": [
+                {
+                    "link": "../../assets/songs/Rain-sound-loop.wav",
+                    "volume": 100
+                }
+            ]
         }
     ]
 }
