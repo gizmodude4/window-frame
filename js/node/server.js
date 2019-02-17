@@ -43,6 +43,7 @@ const effect = new Gpio(6, 'in', 'rising', {debounceTimeout: 10});
 var app = express();
 
 app.get('/scenes', function(req, res) {
+	res.header('Access-Control-Allow-Origin', '*');
     res.send(config);
 });
 

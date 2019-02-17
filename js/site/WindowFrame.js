@@ -54,6 +54,7 @@ class WindowFrame {
         this.effectIndex = 0;
         var song = scene.getSong(0);
         this.showImage();
+        stopAudio(effect);
         playAudio(this.musicTag, song.getLink(), song.getVolume(), song.getFadeDuration()); 
     }
 
