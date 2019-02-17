@@ -1,5 +1,4 @@
-const cors = require('cors'),
-    express = require('express'),
+const express = require('express'),
     fs = require('fs'),
     isvalid = require('isvalid'),
     WebSocket = require('ws');
@@ -34,10 +33,23 @@ isvalid(configFile, {
     config = validData;
 });
 
+// TODO: remove when button pressing stuff is in
+var stdin = process.stdin;
+
+// without this, we would only get streams once enter is pressed
+stdin.setRawMode( true );
+
+// resume stdin in the parent process (node app won't quit all by itself
+// unless an error or process.exit() happens)
+stdin.resume();
+
+// i don't want binary, do you?
+stdin.setEncoding( 'utf8' );
+
 // Set up express app
 var app = express();
 
-app.get('/config', function(req, res) {
+app.get('/scenes', function(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*")
     res.send(config);
 })
@@ -47,13 +59,17 @@ app.listen(8080);
 const wss = new WebSocket.Server({ port: 9090});
 wss.on('connection', function connection(ws) {
     // TODO: remove this debug code
-    var debugInterval = setInterval(function() {
-        ws.send("switch_effect");
-    }, 4000);
+    stdin.on( 'data', function( key ){
+        console.log(key);
+        if (key === 'e') {
+            ws.send("switch_effect");
+        } else if (key === 's') {
+            ws.send("switch_song");
+        } else if (key === 'f') {
+            ws.send("switch_scene");
+        }
+      });
     ws.on('message', function incoming(message){
         console.log('Received ' + message);
-    });
-    ws.on('close', function clear() {
-        clearInterval(debugInterval);
     });
 });
