@@ -1,5 +1,6 @@
 const express = require('express'),
     fs = require('fs'),
+    Gpio = require('onoff').Gpio;
     isvalid = require('isvalid'),
     WebSocket = require('ws');
 
@@ -33,18 +34,10 @@ isvalid(configFile, {
     config = validData;
 });
 
-// TODO: remove when button pressing stuff is in
-var stdin = process.stdin;
-
-// without this, we would only get streams once enter is pressed
-stdin.setRawMode( true );
-
-// resume stdin in the parent process (node app won't quit all by itself
-// unless an error or process.exit() happens)
-stdin.resume();
-
-// i don't want binary, do you?
-stdin.setEncoding( 'utf8' );
+// Set up push buttons
+const scene = new Gpio(4, 'in', 'rising', {debounceTimeout: 10});
+const song = new Gpio(17, 'in', 'rising', {debounceTimeout: 10});
+const effect = new Gpio(5, 'in', 'rising', {debounceTimeout: 10});
 
 // Set up express app
 var app = express();
@@ -57,18 +50,40 @@ app.listen(8080);
 
 const wss = new WebSocket.Server({ port: 9090});
 wss.on('connection', function connection(ws) {
-    // TODO: remove this debug code
-    stdin.on( 'data', function( key ){
-        console.log(key);
-        if (key === 'e') {
-            ws.send("switch_effect");
-        } else if (key === 's') {
-            ws.send("switch_song");
-        } else if (key === 'f') {
-            ws.send("switch_scene");
-        }
-      });
+    scene.watch((err, value) => {
+		if (err) {
+			throw err;
+		}
+		console.log("pushed scene button");
+ 
+		ws.send("switch_scene");
+	});
+	
+	song.watch((err, value) => {
+		if (err) {
+			throw err;
+		}
+		console.log("pushed song button");
+ 
+		ws.send("switch_song");
+	});
+	
+	effect.watch((err, value) => {
+		if (err) {
+			throw err;
+		}
+		console.log("pushed effect button");
+ 
+		ws.send("switch_effect");
+	});
+	
     ws.on('message', function incoming(message){
         console.log('Received ' + message);
     });
+});
+
+process.on('SIGINT', () => {
+  scene.unexport();
+  song.unexport();
+  effect.unexport();
 });
