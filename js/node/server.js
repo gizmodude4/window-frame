@@ -36,15 +36,15 @@ isvalid(configFile, {
 
 // Set up push buttons
 const scene = new Gpio(4, 'in', 'rising', {debounceTimeout: 10});
-const song = new Gpio(17, 'in', 'rising', {debounceTimeout: 10});
-const effect = new Gpio(5, 'in', 'rising', {debounceTimeout: 10});
+const song = new Gpio(5, 'in', 'rising', {debounceTimeout: 10});
+const effect = new Gpio(6, 'in', 'rising', {debounceTimeout: 10});
 
 // Set up express app
 var app = express();
 
 app.get('/scenes', function(req, res) {
     res.send(config);
-})
+});
 
 app.listen(8080);
 
@@ -76,10 +76,6 @@ wss.on('connection', function connection(ws) {
  
 		ws.send("switch_effect");
 	});
-	
-    ws.on('message', function incoming(message){
-        console.log('Received ' + message);
-    });
 });
 
 process.on('SIGINT', () => {

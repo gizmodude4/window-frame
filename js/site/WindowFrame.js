@@ -11,16 +11,12 @@ class WindowFrame {
     }
 
     playNextSong() {
-        console.log(this.scenes);
         var scene = this.scenes[this.sceneIndex];
-        console.log(scene)
         this.songIndex++;
         if (this.songIndex >= scene.getSongsCount()) {
             this.songIndex = 0;
         }
         var song = scene.getSong(this.songIndex);
-        console.log(this.songIndex);
-        console.log(song);
         playAudio(this.musicTag, song.getLink(), song.getVolume(), song.getFadeDuration());
     }
 
