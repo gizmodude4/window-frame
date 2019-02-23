@@ -1,8 +1,7 @@
 class Scene {
-    constructor(image, songs, effects) {
-      this.image = image;
+    constructor(songs, atmosphere) {
       this.songs = songs;
-      this.effects = effects;
+      this.atmosphere = atmosphere;
     }
 
     getSong(index) {
@@ -13,16 +12,16 @@ class Scene {
         return this.songs.length;
     }
 
-    getEffect(index) {
-        return this.effects[index];
+    getAllAtmospheres() {
+        return this.atmosphere;
     }
 
-    getEffectsCount() {
-        return this.effects.length;
+    getAtmosphere(index) {
+        return this.atmosphere[index];
     }
 
-    getImage() {
-        return this.image;
+    getAtmosphereCount() {
+        return this.atmosphere.length;
     }
 }
 

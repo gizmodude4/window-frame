@@ -1,8 +1,10 @@
 class SceneAudio {
-    constructor(link, volume, fadeDuration) {
+    constructor(link, volume, fadeDuration, loop, audioEffects) {
         this.link = link;
         this.volume = volume || 75;
         this.fadeDuration = fadeDuration || 0;
+        this.loop = loop || false;
+        this.audioEffects = audioEffects || [];
     }
 
     getLink() {
@@ -15,6 +17,14 @@ class SceneAudio {
 
     getFadeDuration() {
         return this.fadeDuration;
+    }
+
+    getLoop() {
+        return this.loop;
+    }
+
+    getAudioEffects() {
+        return this.audioEffects;
     }
 }
 

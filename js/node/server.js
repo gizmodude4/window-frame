@@ -1,6 +1,6 @@
 const express = require('express'),
     fs = require('fs'),
-    Gpio = require('onoff').Gpio;
+//    Gpio = require('onoff').Gpio;
     isvalid = require('isvalid'),
     WebSocket = require('ws');
 
@@ -14,17 +14,27 @@ var configFile = JSON.parse(fs.readFileSync(args['config'], 'utf8'));
 var config;
 
 isvalid(configFile, {
-    "scenes": {"type": Array, len: "1-", schema: {
-        "image": {"type": String, required: true},
-        "songs": {"type": Array, required: true, schema: {
-            "link": {"type": String, required: true},
-            "volume": {"type": Number, required: false},
-            "fadeDuration": {"type": Number, required: false}
+    "scenes": {type: Array, len: "1-", schema: {
+        "songs": {type: Array, required: true, schema: {
+            "link": {type: String, required: true},
+            "volume": {type: Number, required: false},
+            "fadeDuration": {type: Number, required: false},
+            "audioEffects": {type: Array, required: false, schema: {
+                "effectType": {type: String, required: true},
+                "config": {type: Object, required: true, unknownKeys: 'allow'}
+            }}
         }},
-        "effects": {"type": Array, required: false, schema: {
-            "link": {"type": String, required: true},
-            "volume": {"type": Number, required: false},
-            "fadeDuration": {"type": Number, required: false}
+        "atmosphere": {type: Array, required: true, schema: {
+            "image": {type: String, required: true},
+            "audio": {type: Array, required: false, schema: {
+                "link": {type: String, required: true},
+                "volume": {type: Number, required: false},
+                "loop": {type: Boolean, required: false},
+                "audioEffects": {type: Array, required: false, schema: {
+                    "effectType": {type: String, required: true},
+                    "config": {type: Object, required: true, unknownKeys: 'allow'}
+                }}
+            }}
         }}
     }}
 }, function(err, validData){
@@ -35,9 +45,9 @@ isvalid(configFile, {
 });
 
 // Set up push buttons
-const scene = new Gpio(4, 'in', 'rising', {debounceTimeout: 10});
-const song = new Gpio(5, 'in', 'rising', {debounceTimeout: 10});
-const effect = new Gpio(6, 'in', 'rising', {debounceTimeout: 10});
+// const scene = new Gpio(4, 'in', 'rising', {debounceTimeout: 10});
+// const song = new Gpio(5, 'in', 'rising', {debounceTimeout: 10});
+// const effect = new Gpio(6, 'in', 'rising', {debounceTimeout: 10});
 
 // Set up express app
 var app = express();
@@ -51,7 +61,7 @@ app.listen(8080);
 
 const wss = new WebSocket.Server({ port: 9090});
 wss.on('connection', function connection(ws) {
-    scene.watch((err, value) => {
+    /*scene.watch((err, value) => {
 		if (err) {
 			throw err;
 		}
@@ -76,7 +86,7 @@ wss.on('connection', function connection(ws) {
 		console.log("pushed effect button");
  
 		ws.send("switch_effect");
-	});
+	});*/
 });
 
 process.on('SIGINT', () => {
