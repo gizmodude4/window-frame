@@ -3,6 +3,7 @@ import SceneAudio from "./SceneAudio.js";
 import Scene from "./Scene.js";
 import Atmosphere from "./Atmosphere.js";
 import AudioEffect from "./AudioEffect.js";
+import AudioManager from "./AudioManager.js"
 
 var display = document.getElementById("background");
 
@@ -10,7 +11,9 @@ var windowFrame;
 
 function getScenesListener() {
     var scenes = parseScenes(JSON.parse(this.responseText));
-    windowFrame = new WindowFrame(scenes, display);
+    var songAudioManager = new AudioManager();
+    var atmosphereAudioManager = new AudioManager();
+    windowFrame = new WindowFrame(scenes, display, songAudioManager, atmosphereAudioManager);
     windowFrame.showScene(0);
     var socket = new WebSocket("ws://localhost:9090");
     socket.onmessage = handleSocketMessage;
@@ -56,9 +59,10 @@ function toSceneAudio(audioConfig) {
 function handleSocketMessage(event) {
     switch(event.data) {
         case "switch_effect":
-            windowFrame.playNextEffect();
+            windowFrame.playNextAtmosphere();
             break;
         case "switch_song":
+            console.log('got switch song');
             windowFrame.playNextSong();
             break;
         case "switch_scene":

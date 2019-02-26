@@ -1,32 +1,24 @@
 const Pizzicato = window.Pizzicato;
 
 class WindowFrame {
-    constructor(scenes, displayTag) {
+    constructor(scenes, displayTag, songAudioManager, atmosphereAudioManager) {
+        this.songAudioManager = songAudioManager;
+        this.atmosphereAudioManager = atmosphereAudioManager;
         this.displayTag = displayTag;
         this.scenes = scenes;
         this.sceneIndex = 0;
         this.songIndex = 0;
         this.atmosphereIndex = 0;
-        this.currentlyPlayingSongs = [];
-        this.currentlyPlayingAtmosphericSounds = [];
     }
 
     playNextSong() {
+        console.log("playNextSong triggered");
         var scene = this.scenes[this.sceneIndex];
         this.songIndex++;
         if (this.songIndex >= scene.getSongsCount()) {
             this.songIndex = 0;
         }
         this.playSong(scene.getSong(this.songIndex));
-    }
-
-    getNextSong() {
-        var scene = this.scenes[this.sceneIndex];
-        this.songIndex++;
-        if (this.songIndex >= scene.getSongsCount()) {
-            this.songIndex = 0;
-        }
-        return scene.getSong(this.songIndex);
     }
 
     playNextAtmosphere() {
@@ -62,43 +54,46 @@ class WindowFrame {
     }
 
     playSong(song) {
-        this.currentlyPlayingSongs.forEach(currSong => currSong.stop());
-        getAudio(song, audio => {
-            audio.on('end', () => this.playSong(this.getNextSong()));
-            audio.play();
-            this.currentlyPlayingSongs = [audio];
+        console.log("playing song...");
+        console.log(song);
+        this.getAudio(song, audio => {
+            audio.on('end', () => {
+                console.log("onEnd triggered");
+                this.songAudioManager.stopAllPlayingAudio();
+                this.playNextSong()
+            });
+            this.songAudioManager.stopAllPlayingAudio();
+            this.songAudioManager.playAudio(audio);
         });
     }
 
     playAtmosphere(atmosphere) {
-        this.currentlyPlayingAtmosphericSounds.forEach(atmos => atmos.stop())
-        this.currentlyPlayingAtmosphericSounds = [];
+        this.atmosphereAudioManager.stopAllPlayingAudio();
         atmosphere.getAudio().forEach(audio => {
-            getAudio(audio, loadedAudio => {
-                loadedAudio.play();
-                this.currentlyPlayingAtmosphericSounds.push(loadedAudio);
+            this.getAudio(audio, loadedAudio => {
+                this.atmosphereAudioManager.playAudio(loadedAudio);
             });
         });
     }
-}
 
-function getAudio(audio, cb) {
-    var newAudio = new Pizzicato.Sound({ 
-        source: 'file',
-        options: { 
-            path: audio.getLink(), 
-            volume: audio.getVolume()/100,
-            release: audio.getFadeDuration()/1000,
-            attack: audio.getFadeDuration()/1000,
-            loop: audio.getLoop()
-        }
-        }, function() {
-            audio.getAudioEffects().forEach(effect => {
-                var newEffect = createEffect(effect);
-                newAudio.addEffect(newEffect);
+    getAudio(audio, cb) {
+        var newAudio = new Pizzicato.Sound({ 
+            source: 'file',
+            options: { 
+                path: audio.getLink(), 
+                volume: audio.getVolume()/100,
+                release: audio.getFadeDuration()/1000,
+                attack: audio.getFadeDuration()/1000,
+                loop: audio.getLoop()
+            }
+            }, function() {
+                audio.getAudioEffects().forEach(effect => {
+                    var newEffect = createEffect(effect);
+                    newAudio.addEffect(newEffect);
+                });
+                cb(newAudio);
             });
-            cb(newAudio);
-        });
+    }
 }
 
 function createEffect(effect) {
