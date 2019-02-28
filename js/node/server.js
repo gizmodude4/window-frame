@@ -109,7 +109,7 @@ function setUpInterrupts(ws) {
     } else {
         process.stdin.on('keypress', function (ch, key) {
             if (key && key.ctrl && key.name == 'c') {
-                process.stdin.pause();
+                process.exit();
             } else if (key && key.name == 's') {
                 ws.send("switch_scene");
             } else if (key && key.name == 'm') {

@@ -3,9 +3,12 @@ import SceneAudio from "./SceneAudio.js";
 import Scene from "./Scene.js";
 import Atmosphere from "./Atmosphere.js";
 import AudioEffect from "./AudioEffect.js";
-import AudioManager from "./AudioManager.js"
+import AudioManager from "./AudioManager.js";
 
 var display = document.getElementById("background");
+
+var processingEvent = false;
+var processingEventWatchdog = null;
 
 var windowFrame;
 
@@ -57,23 +60,43 @@ function toSceneAudio(audioConfig) {
 }
 
 function handleSocketMessage(event) {
-    switch(event.data) {
-        case "switch_effect":
-            windowFrame.playNextAtmosphere();
-            break;
-        case "switch_song":
-            console.log('got switch song');
-            windowFrame.playNextSong();
-            break;
-        case "switch_scene":
-            windowFrame.showNextScene();
-            break;    
-        default:
-            console.log("Unknown socket message type: " + event.data);
-            break;
+    if (!processingEvent) {
+        setProcessing();
+        switch(event.data) {
+            case "switch_effect":
+                windowFrame.playNextAtmosphere(clearProcessing);
+                break;
+            case "switch_song":
+                console.log('got switch song');
+                windowFrame.playNextSong(clearProcessing);
+                break;
+            case "switch_scene":
+                windowFrame.showNextScene(clearProcessing);
+                break;    
+            default:
+                console.log("Unknown socket message type: " + event.data);
+                break;
+        }
+    } else {
+        console.log("blocked spammy call " + event.data);
     }
 }
 
+function clearProcessing() {
+    processingEvent = false;
+    if (processingEventWatchdog) {
+        clearTimeout(processingEventWatchdog);
+    }
+}
+
+function setProcessing() {
+    processingEvent = true;
+    processingEventWatchdog = setTimeout(function() {
+        if (processingEvent) {
+            processingEvent = false;
+        }
+    }, 5000);
+}
 
 var oReq = new XMLHttpRequest();
 oReq.addEventListener("load", getScenesListener);

@@ -11,187 +11,80 @@ class WindowFrame {
         this.atmosphereIndex = 0;
     }
 
-    playNextSong() {
-        console.log("playNextSong triggered");
+    playNextSong(cb) {
+        this.switchingAudio = true;
         var scene = this.scenes[this.sceneIndex];
         this.songIndex++;
         if (this.songIndex >= scene.getSongsCount()) {
             this.songIndex = 0;
         }
-        this.playSong(scene.getSong(this.songIndex));
+        this.playSong(scene.getSong(this.songIndex), cb);
+        this.switchingAudio = false;
     }
 
-    playNextAtmosphere() {
+    playNextAtmosphere(cb) {
         var scene = this.scenes[this.sceneIndex];
         this.atmosphereIndex++;
         if (this.atmosphereIndex >= scene.getAtmosphereCount()) {
             this.atmosphereIndex = 0;
         }
         this.showImage(scene.getAtmosphere(this.atmosphereIndex).getImage());
-        this.playAtmosphere(scene.getAtmosphere(this.atmosphereIndex));
+        this.playAtmosphere(scene.getAtmosphere(this.atmosphereIndex), cb);
     }
 
-    showNextScene() {
+    showNextScene(cb) {
         this.sceneIndex++;
         if (this.sceneIndex >= this.scenes.length) {
             this.sceneIndex = 0;
         }
-        this.showScene(this.sceneIndex);
+        this.showScene(this.sceneIndex, cb);
     }
 
-    showScene(index) {
+    showScene(index, cb) {
         var scene = this.scenes[index];
         this.sceneIndex = index;
         this.songIndex = 0;
         this.atmosphereIndex = 0;
+        this.switchingAudio = true;
+        this.switchingAtmosphere = true;
         this.playSong(scene.getSong(0));
         this.showImage(scene.getAtmosphere(0).getImage());
-        this.playAtmosphere(scene.getAtmosphere(0)); 
+        this.playAtmosphere(scene.getAtmosphere(0), cb); 
+        this.switchingAudio = false;
+        this.switchingAudio = false;
     }
 
     showImage(image) {
         this.displayTag.style.backgroundImage = "url(" + image + ")";
     }
 
-    playSong(song) {
-        console.log("playing song...");
-        console.log(song);
-        this.getAudio(song, audio => {
-            audio.on('end', () => {
-                console.log("onEnd triggered");
-                this.songAudioManager.stopAllPlayingAudio();
-                this.playNextSong()
-            });
-            this.songAudioManager.stopAllPlayingAudio();
-            this.songAudioManager.playAudio(audio);
-        });
+    playSong(song, cb) {
+        this.songAudioManager.stopAllPlayingAudio();
+        this.songAudioManager.playAudio(song, () => {
+            this.playNextSong();
+        }, cb);
     }
 
-    playAtmosphere(atmosphere) {
+    playAtmosphere(atmosphere, cb) {
         this.atmosphereAudioManager.stopAllPlayingAudio();
+        var promises = [];
+        var self = this;
         atmosphere.getAudio().forEach(audio => {
-            this.getAudio(audio, loadedAudio => {
-                this.atmosphereAudioManager.playAudio(loadedAudio);
-            });
+            promises.push(new Promise(function(resolve) {
+                self.atmosphereAudioManager.playAudio(audio, null, resolve);
+            }));
         });
-    }
-
-    getAudio(audio, cb) {
-        var newAudio = new Pizzicato.Sound({ 
-            source: 'file',
-            options: { 
-                path: audio.getLink(), 
-                volume: audio.getVolume()/100,
-                release: audio.getFadeDuration()/1000,
-                attack: audio.getFadeDuration()/1000,
-                loop: audio.getLoop()
-            }
-            }, function() {
-                audio.getAudioEffects().forEach(effect => {
-                    var newEffect = createEffect(effect);
-                    newAudio.addEffect(newEffect);
+        if (promises.length > 0) {
+            Promise.all(promises)
+                .then(function() {
+                    if (cb) {
+                        cb();
+                    }
                 });
-                cb(newAudio);
-            });
+        } else {
+            cb();
+        }
     }
 }
-
-function createEffect(effect) {
-    switch(effect.type) {
-        case "lpf":
-            return new Pizzicato.Effects.LowPassFilter(effect.config);
-        case "hpf":
-            return new Pizzicato.Effects.HighPassFilter(effect.config);
-        case "reverb":
-            return new Pizzicato.Effects.Reverb(effect.config);
-        default:
-            throw "Unknown effect type " + effect.type; 
-    }
-}
-
-/*
-function playAudio(tag, song, volume, fadeDuration) {
-    var lpfAudio =  new Pizzicato.Sound({ 
-        source: 'file',
-        options: { path: song, volume: volume, release: fadeDuration }
-    }, function() {
-        if (tag.duration > (fadeDuration * 2)/1000) {
-            tag.volume = 0.0;
-            var fadeIn = setInterval(function() {
-                if (tag.volume >= volume/100 - 0.01) {
-                    tag.volume = volume/100;
-                    clearInterval(fadeIn);
-                } else {
-                    tag.volume += 0.01;
-                }
-                
-            }, fadeDuration/100);
-
-            var fadeOut = setInterval(function() {
-                if (tag.currentTime <= (tag.duration - fadeDuration)) {
-                    if (tag.volume <= 0.01) {
-                        clearInterval(fadeOut)
-                    } else {
-                        tag.volume -= 0.01;
-                    }
-                }
-            }, fadeDuration/100);
-        }
-        var hpf = new Pizzicato.Effects.HighPassFilter({
-            frequency: 1000,
-            peak: 10
-        });
-
-        var lpf = new Pizzicato.Effects.LowPassFilter({
-            frequency: 500,
-            peak: 10
-        });
-
-        var reverb = new Pizzicato.Effects.Reverb({
-            time: 0.9,
-            decay: 3,
-            reverse: false,
-            mix: 1
-        });
-        var lpfAudioReverb =  new Pizzicato.Sound(song, function() {
-            lpfAudioReverb.addEffect(reverb);
-            lpfAudioReverb.addEffect(hpf);
-            lpfAudio.volume = 0.1;
-            lpfAudio.play();
-            lpfAudioReverb.play();
-        });
-    });
-}*/
-
-/* SAFE PLAY AUDIO
-function playAudio(tag, song, volume, fadeDuration) {
-    tag.src = song;
-    tag.load();
-    tag.onloadedmetadata = function() {
-        if (tag.duration > (fadeDuration * 2)/1000) {
-            tag.volume = 0.0;
-            var fadeIn = setInterval(function() {
-                if (tag.volume >= volume/100 - 0.01) {
-                    tag.volume = volume/100;
-                    clearInterval(fadeIn);
-                } else {
-                    tag.volume += 0.01;
-                }
-                
-            }, fadeDuration/100);
-
-            var fadeOut = setInterval(function() {
-                if (tag.currentTime <= (tag.duration - fadeDuration)) {
-                    if (tag.volume <= 0.01) {
-                        clearInterval(fadeOut)
-                    } else {
-                        tag.volume -= 0.01;
-                    }
-                }
-            }, fadeDuration/100);
-        }
-        tag.play();
-    }
-}*/
 
 export default WindowFrame;
