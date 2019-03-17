@@ -1,7 +1,8 @@
 const Pizzicato = window.Pizzicato;
 
 class WindowFrame {
-    constructor(scenes, displayTag, songAudioManager, atmosphereAudioManager) {
+    constructor(scenes, type, displayTag, songAudioManager, atmosphereAudioManager) {
+        this.type = type || 'playlist';
         this.songAudioManager = songAudioManager;
         this.atmosphereAudioManager = atmosphereAudioManager;
         this.displayTag = displayTag;
@@ -9,6 +10,9 @@ class WindowFrame {
         this.sceneIndex = 0;
         this.songIndex = 0;
         this.atmosphereIndex = 0;
+        this.nextSceneTimeout = undefined;
+        this.processingEvent = false;
+        this.processingEventWatchdog = undefined;
     }
 
     playNextSong(cb) {
@@ -33,16 +37,32 @@ class WindowFrame {
     }
 
     showNextScene(cb) {
-        this.sceneIndex++;
-        if (this.sceneIndex >= this.scenes.length) {
-            this.sceneIndex = 0;
+        var nextScene = undefined;
+        if (this.type != 'scheduled') {
+            this.sceneIndex++;
+            if (this.sceneIndex >= this.scenes.length) {
+                this.sceneIndex = 0;
+            }
+            nextScene = this.scenes[this.sceneIndex];
+        } else {
+            nextScene = getNextSceneInTime(this.scenes);
         }
-        this.showScene(this.sceneIndex, cb);
+        this.showScene(nextScene, cb);
     }
 
-    showScene(index, cb) {
-        var scene = this.scenes[index];
-        this.sceneIndex = index;
+    showScene(scene, cb) {
+        if (scene.getEndTime()) {
+            var self = this;
+            self.nextSceneTimeout = setTimeout(() => {
+                var processInterval = setInterval(() => {
+                    if (!self.getProcessing()) {
+                        clearInterval(processInterval);
+                        self.setProcessing();
+                        self.showNextScene(self.clearProcessing);
+                    }
+                }, 1000);
+            }, getTimeUntil(scene.getEndTime()));
+        }
         this.songIndex = 0;
         this.atmosphereIndex = 0;
         this.switchingAudio = true;
@@ -55,7 +75,7 @@ class WindowFrame {
     }
 
     showImage(image) {
-        this.displayTag.style.backgroundImage = "url(" + image + ")";
+        this.displayTag.style.backgroundImage = 'url(' + image + ')';
     }
 
     playSong(song, cb) {
@@ -70,21 +90,64 @@ class WindowFrame {
         var promises = [];
         var self = this;
         atmosphere.getAudio().forEach(audio => {
-            promises.push(new Promise(function(resolve) {
+            promises.push(new Promise((resolve) => {
                 self.atmosphereAudioManager.playAudio(audio, null, resolve);
             }));
         });
         if (promises.length > 0) {
-            Promise.all(promises)
-                .then(function() {
-                    if (cb) {
-                        cb();
-                    }
-                });
+            Promise.all(promises).then(() => { if(cb) { cb(); } });
         } else {
-            cb();
+            if (cb) {
+                cb();
+            }
         }
     }
+
+    getProcessing() {
+        return this.processingEvent;
+    }
+
+    setProcessing() {
+        this.processingEvent = true;
+        this.processingEventWatchdog = setTimeout(() => {
+            if (this.processingEvent) {
+                this.processingEvent = false;
+            }
+        }, 5000);
+    }
+
+    clearProcessing() {
+        if (this.processingEventWatchdog) {
+            clearTimeout(this.processingEventWatchdog);
+        }
+        this.processingEvent = false;
+    }
+}
+
+function getNextSceneInTime(scenes) {
+    var nextTimeUntil = -1;
+    var nextScene = undefined;
+    scenes.forEach(scene => {
+        var timeUntil = getTimeUntil(scene.getEndTime());
+        if (nextTimeUntil === -1 || timeUntil < nextTimeUntil) {
+            nextTimeUntil = timeUntil;
+            nextScene = scene;
+        }
+    });
+    return nextScene;
+}
+
+function getTimeUntil(time) {
+    var now = new Date(Date.now());
+    var setTime = new Date(now.getTime());
+    setTime.setHours(time.substring(0, time.indexOf(':')));
+    setTime.setMinutes(time.substring(time.indexOf(':') + 1));
+    setTime.setSeconds(0);
+    setTime.setMilliseconds(0);
+    if (setTime.getTime() < now.getTime()) {
+        setTime.setTime(setTime.getTime() + 24*60*60*1000);
+    }
+    return setTime.getTime() - now.getTime();
 }
 
 export default WindowFrame;

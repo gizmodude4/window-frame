@@ -1,7 +1,8 @@
 class Scene {
-    constructor(songs, atmosphere) {
+    constructor(songs, atmosphere, endTime) {
       this.songs = songs;
       this.atmosphere = atmosphere;
+      this.endTime = endTime;
     }
 
     getSong(index) {
@@ -22,6 +23,10 @@ class Scene {
 
     getAtmosphereCount() {
         return this.atmosphere.length;
+    }
+
+    getEndTime() {
+        return this.endTime;
     }
 }
 

@@ -1,46 +1,44 @@
-import WindowFrame from "./WindowFrame.js";
-import SceneAudio from "./SceneAudio.js";
-import Scene from "./Scene.js";
-import Atmosphere from "./Atmosphere.js";
-import AudioEffect from "./AudioEffect.js";
-import AudioManager from "./AudioManager.js";
+import WindowFrame from './WindowFrame.js';
+import SceneAudio from './SceneAudio.js';
+import Scene from './Scene.js';
+import Atmosphere from './Atmosphere.js';
+import AudioEffect from './AudioEffect.js';
+import AudioManager from './AudioManager.js';
 
-var display = document.getElementById("background");
-
-var processingEvent = false;
-var processingEventWatchdog = null;
+var display = document.getElementById('background');
 
 var windowFrame;
 
 function getScenesListener() {
-    var scenes = parseScenes(JSON.parse(this.responseText));
+    var returnConfig = JSON.parse(this.responseText)
+    var scenes = parseScenes(returnConfig);
     var songAudioManager = new AudioManager();
     var atmosphereAudioManager = new AudioManager();
-    windowFrame = new WindowFrame(scenes, display, songAudioManager, atmosphereAudioManager);
-    windowFrame.showScene(0);
-    var socket = new WebSocket("ws://localhost:9090");
-    socket.onmessage = handleSocketMessage;
+    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], display, songAudioManager, atmosphereAudioManager);
+    windowFrame.showScene(scenes[0]);
+    var socket = new WebSocket('ws://localhost:9090');
+    socket.onmessage = (event) => handleAction(event.data);
 }
 
 function parseScenes(sceneConfigs) {
     var scenes = [];
-    sceneConfigs["scenes"].forEach(function(sceneConfig) {
+    sceneConfigs['scenes'].forEach(function(sceneConfig) {
         var songs = [];
         var atmosphere = [];
-        sceneConfig["songs"].forEach(function(songConfig){
+        sceneConfig['songs'].forEach(function(songConfig){
             songs.push(toSceneAudio(songConfig))
         });
 
-        sceneConfig["atmosphere"].forEach(function(atmosphereConfig) {
+        sceneConfig['atmosphere'].forEach(function(atmosphereConfig) {
             var atmosphereAudio = [];
             if (atmosphereConfig['audio'] && atmosphereConfig['audio'].length > 0) {
                 atmosphereConfig['audio'].forEach(audioConfig => {
                     atmosphereAudio.push(toSceneAudio(audioConfig));
                 })
             }
-            atmosphere.push(new Atmosphere(atmosphereConfig["image"], atmosphereAudio))
+            atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereAudio))
         });
-        scenes.push(new Scene(songs, atmosphere));
+        scenes.push(new Scene(songs, atmosphere, sceneConfig['endTime']));
     });
     return scenes;
 }
@@ -52,53 +50,53 @@ function toSceneAudio(audioConfig) {
             audioEffects.push(new AudioEffect(effectConfig['effectType'], effectConfig['config']));
         });
     }
-    return new SceneAudio(audioConfig["link"],
+    return new SceneAudio(audioConfig['link'],
         audioConfig['volume'],
         audioConfig['fadeDuration'],
         audioConfig['loop'],
         audioEffects);
 }
 
-function handleSocketMessage(event) {
-    if (!processingEvent) {
-        setProcessing();
-        switch(event.data) {
-            case "switch_effect":
-                windowFrame.playNextAtmosphere(clearProcessing);
+function handleAction(action) {
+    if (!windowFrame.getProcessing()) {
+        windowFrame.setProcessing();
+        switch(action) {
+            case 'switch_effect':
+                windowFrame.playNextAtmosphere(windowFrame.clearProcessing());
                 break;
-            case "switch_song":
-                console.log('got switch song');
-                windowFrame.playNextSong(clearProcessing);
+            case 'switch_song':
+                windowFrame.playNextSong(windowFrame.clearProcessing());
                 break;
-            case "switch_scene":
-                windowFrame.showNextScene(clearProcessing);
+            case 'switch_scene':
+                windowFrame.showNextScene(windowFrame.clearProcessing());
                 break;    
             default:
-                console.log("Unknown socket message type: " + event.data);
+                console.log('Unknown socket message type: ' + action);
                 break;
         }
     } else {
-        console.log("blocked spammy call " + event.data);
+        console.log('Received action ' + action + ' during processing. Ignoring...');
     }
-}
-
-function clearProcessing() {
-    processingEvent = false;
-    if (processingEventWatchdog) {
-        clearTimeout(processingEventWatchdog);
-    }
-}
-
-function setProcessing() {
-    processingEvent = true;
-    processingEventWatchdog = setTimeout(function() {
-        if (processingEvent) {
-            processingEvent = false;
-        }
-    }, 5000);
 }
 
 var oReq = new XMLHttpRequest();
-oReq.addEventListener("load", getScenesListener);
-oReq.open("GET", "http://localhost:8080/scenes");
+oReq.addEventListener('load', getScenesListener);
+oReq.open('GET', 'http://localhost:8080/scenes');
 oReq.send();
+
+document.addEventListener('keypress', (event) => {
+    switch(event.key) {
+        case 'e':
+            windowFrame.playNextAtmosphere(windowFrame.clearProcessing());
+            break;
+        case 'm':
+            windowFrame.playNextSong(windowFrame.clearProcessing());
+            break;
+        case 's':
+            windowFrame.showNextScene(windowFrame.clearProcessing());
+            break;    
+        default:
+            console.log('Unknown socket message type: ' + action);
+            break;
+    }
+});

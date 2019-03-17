@@ -47,14 +47,14 @@ function getAudio(audio, cb) {
 
 function createEffect(effect) {
     switch(effect.type) {
-        case "lpf":
+        case 'lpf':
             return new Pizzicato.Effects.LowPassFilter(effect.config);
-        case "hpf":
+        case 'hpf':
             return new Pizzicato.Effects.HighPassFilter(effect.config);
-        case "reverb":
+        case 'reverb':
             return new Pizzicato.Effects.Reverb(effect.config);
         default:
-            throw "Unknown effect type " + effect.type; 
+            throw 'Unknown effect type ' + effect.type; 
     }
 }
 
