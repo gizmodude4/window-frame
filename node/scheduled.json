@@ -5,7 +5,7 @@
             "endTime": "23:24",
             "songs": [
                 {
-                    "link": "../site/assets/songs/OOT_AdultLink_Scream1.wav",
+                    "link": "assets/songs/OOT_AdultLink_Scream1.wav",
                     "volume": 50,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -18,7 +18,7 @@
                     ]
                 },
                 {
-                    "link": "../site/assets/songs/Tired of Wandering - Wandering from Tired.mp3",
+                    "link": "assets/songs/Tired of Wandering - Wandering from Tired.mp3",
                     "volume": 75,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "link": "../site/assets/songs/ahhhohhh.mp3",
+                    "link": "assets/songs/ahhhohhh.mp3",
                     "volume": 50,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -44,7 +44,7 @@
                     ]
                 },
                 {
-                    "link": "../site/assets/songs/cuccoo_follow.mp3",
+                    "link": "assets/songs/cuccoo_follow.mp3",
                     "volume": 100,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -59,10 +59,10 @@
             ],
             "atmosphere": [
                 {
-                    "image": "../site/assets/landscape.gif",
+                    "image": "assets/landscape.gif",
                     "audio": [
                         {
-                            "link": "../site/assets/songs/Rain-sound-loop.wav",
+                            "link": "assets/songs/Rain-sound-loop.wav",
                             "volume": 50,
                             "loop": true,
                             "audioEffects": [
@@ -77,7 +77,7 @@
                     ]
                 },
                 {
-                    "image": "../site/assets/landscape.gif"
+                    "image": "assets/landscape.gif"
                 }
             ]
         },
@@ -85,7 +85,7 @@
             "endTime": "23:25",
             "songs": [
                 {
-                    "link": "../site/assets/songs/Crunk Knight.mp3",
+                    "link": "assets/songs/Crunk Knight.mp3",
                     "volume": 75,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -98,7 +98,7 @@
                     ]
                 },
                 {
-                    "link": "../site/assets/songs/Tired of Wandering - Wandering from Tired.mp3",
+                    "link": "assets/songs/Tired of Wandering - Wandering from Tired.mp3",
                     "volume": 75,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -113,10 +113,10 @@
             ],
             "atmosphere": [
                 {
-                    "image": "../site/assets/space.gif",
+                    "image": "assets/space.gif",
                     "audio": [
                         {
-                            "link": "../site/assets/songs/Rain-sound-loop.wav",
+                            "link": "assets/songs/Rain-sound-loop.wav",
                             "volume": 75,
                             "loop": true,
                             "audioEffects": [
@@ -131,7 +131,7 @@
                     ]
                 },
                 {
-                    "image": "../site/assets/space.gif"
+                    "image": "assets/space.gif"
                 }
             ]
         },
@@ -139,7 +139,7 @@
             "endTime": "18:00",
             "songs": [
                 {
-                    "link": "../site/assets/songs/cyberpunk1.mp3",
+                    "link": "assets/songs/cyberpunk1.mp3",
                     "volume": 75,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -152,7 +152,7 @@
                     ]
                 },
                 {
-                    "link": "../site/assets/songs/cyberpunk2.mp3",
+                    "link": "assets/songs/cyberpunk2.mp3",
                     "volume": 75,
                     "fadeDuration": 2000,
                     "audioEffects": [
@@ -167,10 +167,10 @@
             ],
             "atmosphere": [
                 {
-                    "image": "../site/assets/alley.gif",
+                    "image": "assets/alley.gif",
                     "audio": [
                         {
-                            "link": "../site/assets/songs/Rain-sound-loop.wav",
+                            "link": "assets/songs/Rain-sound-loop.wav",
                             "volume": 75,
                             "loop": true,
                             "audioEffects": [
@@ -185,7 +185,7 @@
                     ]
                 },
                 {
-                    "image": "../site/assets/alley.gif"
+                    "image": "assets/alley.gif"
                 }
             ]
         }

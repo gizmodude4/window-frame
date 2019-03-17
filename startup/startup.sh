@@ -4,7 +4,7 @@ xset s off
 xset -dpms
 if [ ! -L "/var/www/html/main.html" ]
 then
-  sudo cp /home/pi/window-frame/site/* /var/www/html/
+  sudo cp -r /home/pi/window-frame/site/* /var/www/html/
 fi
 sed -i 's/"exited_cleanly":false/"exited_cleanly":true/' /home/pi/.config/chromium/Default/Preferences
 sed -i 's/"exit_type":"Crashed"/"exit_type":"Normal"/' /home/pi/.config/chromium/Default/Preferences
