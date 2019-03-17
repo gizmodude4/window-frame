@@ -1,0 +1,193 @@
+{
+    "switchType": "scheduled",
+    "scenes": [
+        {
+            "endTime": "23:24",
+            "songs": [
+                {
+                    "link": "../site/assets/songs/OOT_AdultLink_Scream1.wav",
+                    "volume": 50,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 4000
+                            }
+                        }
+                    ]
+                },
+                {
+                    "link": "../site/assets/songs/Tired of Wandering - Wandering from Tired.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 500
+                            }
+                        }
+                    ]
+                },
+                {
+                    "link": "../site/assets/songs/ahhhohhh.mp3",
+                    "volume": 50,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 500
+                            }
+                        }
+                    ]
+                },
+                {
+                    "link": "../site/assets/songs/cuccoo_follow.mp3",
+                    "volume": 100,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 500
+                            }
+                        }
+                    ]
+                }
+            ],
+            "atmosphere": [
+                {
+                    "image": "../site/assets/landscape.gif",
+                    "audio": [
+                        {
+                            "link": "../site/assets/songs/Rain-sound-loop.wav",
+                            "volume": 50,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "hpf",
+                                    "config": {
+                                        "frequency": 500
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "image": "../site/assets/landscape.gif"
+                }
+            ]
+        },
+        {
+            "endTime": "23:25",
+            "songs": [
+                {
+                    "link": "../site/assets/songs/Crunk Knight.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 500
+                            }
+                        }
+                    ]
+                },
+                {
+                    "link": "../site/assets/songs/Tired of Wandering - Wandering from Tired.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 500
+                            }
+                        }
+                    ]
+                }
+            ],
+            "atmosphere": [
+                {
+                    "image": "../site/assets/space.gif",
+                    "audio": [
+                        {
+                            "link": "../site/assets/songs/Rain-sound-loop.wav",
+                            "volume": 75,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "hpf",
+                                    "config": {
+                                        "frequency": 500
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "image": "../site/assets/space.gif"
+                }
+            ]
+        },
+        {
+            "endTime": "18:00",
+            "songs": [
+                {
+                    "link": "../site/assets/songs/cyberpunk1.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 500
+                            }
+                        }
+                    ]
+                },
+                {
+                    "link": "../site/assets/songs/cyberpunk2.mp3",
+                    "volume": 75,
+                    "fadeDuration": 2000,
+                    "audioEffects": [
+                        {
+                            "effectType": "hpf",
+                            "config": {
+                                "frequency": 500
+                            }
+                        }
+                    ]
+                }
+            ],
+            "atmosphere": [
+                {
+                    "image": "../site/assets/alley.gif",
+                    "audio": [
+                        {
+                            "link": "../site/assets/songs/Rain-sound-loop.wav",
+                            "volume": 75,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "hpf",
+                                    "config": {
+                                        "frequency": 500
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "image": "../site/assets/alley.gif"
+                }
+            ]
+        }
+    ]
+}
