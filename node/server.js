@@ -78,7 +78,7 @@ process.on('SIGINT', () => {
   }
 });
 
-function setUpInterrupts() {
+function setUpInterrupts(ws) {
     if (isPi()) {
         scene.watch((err, value) => {
             if (err) {
