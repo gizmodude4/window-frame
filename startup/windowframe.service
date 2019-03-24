@@ -1,0 +1,12 @@
+[Unit]
+Description=Window Frame service
+
+[Service]
+type=simple
+Restart=always
+RestartSec=1
+User=pi
+ExecStart=/home/pi/startup/startup.sh
+
+[Install]
+WantedBy=multi-user.target
