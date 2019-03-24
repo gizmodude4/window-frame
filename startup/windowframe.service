@@ -2,11 +2,11 @@
 Description=Window Frame service
 
 [Service]
-type=simple
+Type=simple
 Restart=always
 RestartSec=1
 User=pi
-ExecStart=/home/pi/startup/startup.sh
+ExecStart=/home/pi/window-frame/startup/startup.sh
 
 [Install]
 WantedBy=multi-user.target

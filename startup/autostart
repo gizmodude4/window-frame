@@ -1,0 +1,4 @@
+@xset s off
+@xset -dpms
+@xset s noblank
+@chromium-browser --noerrdialogs --incognito --kiosk http://localhost/main.html 
