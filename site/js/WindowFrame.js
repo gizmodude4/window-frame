@@ -67,8 +67,8 @@ class WindowFrame {
         this.atmosphereIndex = 0;
         this.switchingAudio = true;
         this.switchingAtmosphere = true;
+        this.showImage(scene.getAtmosphere(0).getImage());
         this.playSong(scene.getSong(0), () => {
-            this.showImage(scene.getAtmosphere(0).getImage());
             this.playAtmosphere(scene.getAtmosphere(0), cb); 
         });
         this.switchingAudio = false;
