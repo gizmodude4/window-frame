@@ -112,6 +112,7 @@ class WindowFrame {
         this.processingEventWatchdog = setTimeout(() => {
             if (this.processingEvent) {
                 this.processingEvent = false;
+                this.processingEventWatchdog = undefined;
             }
         }, 5000);
     }

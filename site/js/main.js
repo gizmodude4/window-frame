@@ -62,13 +62,13 @@ function handleAction(action) {
         windowFrame.setProcessing();
         switch(action) {
             case 'switch_effect':
-                windowFrame.playNextAtmosphere(windowFrame.clearProcessing());
+                windowFrame.playNextAtmosphere(() => { windowFrame.clearProcessing(); });
                 break;
             case 'switch_song':
-                windowFrame.playNextSong(windowFrame.clearProcessing());
+                windowFrame.playNextSong(() => { windowFrame.clearProcessing(); });
                 break;
             case 'switch_scene':
-                windowFrame.showNextScene(windowFrame.clearProcessing());
+                windowFrame.showNextScene(() => { windowFrame.clearProcessing(); });
                 break;    
             default:
                 console.log('Unknown socket message type: ' + action);
