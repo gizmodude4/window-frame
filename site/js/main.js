@@ -17,7 +17,7 @@ function getScenesListener() {
     windowFrame = new WindowFrame(scenes, returnConfig['switchType'], display, songAudioManager, atmosphereAudioManager);
     windowFrame.showScene(scenes[0]);
     var socket = new WebSocket('ws://localhost:9090');
-    socket.onmessage = (event) => handleAction(event.data);
+    socket.onmessage = handleAction;
 }
 
 function parseScenes(sceneConfigs) {
@@ -57,7 +57,13 @@ function toSceneAudio(audioConfig) {
         audioEffects);
 }
 
-function handleAction(action) {
+function handleAction(event) {
+    var action = undefined;
+    if (event.key) {
+        action = keyToAction(event.key);
+    } else if (event.data) {
+        action = event.data;
+    }
     if (!windowFrame.getProcessing()) {
         windowFrame.setProcessing();
         switch(action) {
@@ -97,4 +103,4 @@ function keyToAction(key) {
     }
 }
 
-document.addEventListener('keypress', (event) => { handleAction(keyToAction(event.key)); });
+document.addEventListener('keypress', handleAction);
