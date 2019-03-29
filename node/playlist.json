@@ -102,53 +102,27 @@
         {
             "songs": [
                 {
-                    "link": "assets/songs/OOT_AdultLink_Scream1.wav",
-                    "volume": 50,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "hpf",
-                            "config": {
-                                "frequency": 4000
-                            }
-                        }
-                    ]
-                },
-                {
                     "link": "assets/songs/Tired of Wandering - Wandering from Tired.mp3",
                     "volume": 75,
                     "fadeDuration": 2000,
                     "audioEffects": [
                         {
-                            "effectType": "hpf",
+                            "effectType": "lpf",
                             "config": {
-                                "frequency": 500
+                                "frequency": 15000
                             }
                         }
                     ]
                 },
                 {
-                    "link": "assets/songs/ahhhohhh.mp3",
-                    "volume": 50,
+                    "link": "assets/songs/danimal.mp3",
+                    "volume": 75,
                     "fadeDuration": 2000,
                     "audioEffects": [
                         {
-                            "effectType": "hpf",
+                            "effectType": "lpf",
                             "config": {
-                                "frequency": 500
-                            }
-                        }
-                    ]
-                },
-                {
-                    "link": "assets/songs/cuccoo_follow.mp3",
-                    "volume": 100,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "hpf",
-                            "config": {
-                                "frequency": 500
+                                "frequency": 15000
                             }
                         }
                     ]
@@ -159,16 +133,17 @@
                     "image": "assets/landscape.gif",
                     "audio": [
                         {
-                            "link": "assets/songs/Rain-sound-loop.wav",
+                            "link": "assets/songs/waterfall.mp3",
                             "volume": 50,
                             "loop": true,
                             "audioEffects": [
-                                {
-                                    "effectType": "hpf",
-                                    "config": {
-                                        "frequency": 500
-                                    }
-                                }
+                            ]
+                        },
+                        {
+                            "link": "assets/songs/nature.mp3",
+                            "volume": 50,
+                            "loop": true,
+                            "audioEffects": [
                             ]
                         }
                     ]
