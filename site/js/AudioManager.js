@@ -7,6 +7,7 @@ class AudioManager {
         getAudio(audioDefinition, audio => {
             audio.play();
             this.currentlyPlayingAudio.push(audio);
+            audio.on("end", () => audio.disconnect());
             if (onEndCb) {
                 audio.on('end', onEndCb);
             }
@@ -19,8 +20,8 @@ class AudioManager {
     stopAllPlayingAudio() {
         this.currentlyPlayingAudio.forEach(audio => {
             audio.off('end');
+            audio.on("end", () => audio.disconnect());
             audio.stop();
-            audio.disconnect();
         });
         this.currentlyPlayingAudio = [];
     }
