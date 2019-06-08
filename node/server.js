@@ -6,13 +6,26 @@ const express = require('express'),
 
 var Gpio, scene, song, effect;
 
+var configPath;
 var args = require('minimist')(process.argv.slice(2));
 
-if (!args['config']) {
-    throw new Error('Must provide config file');
+if (args['config']) {
+    configPath = args['config'];
 }
 
-var configFile = JSON.parse(fs.readFileSync(args['config'], 'utf8'));
+if (process.env.CONFIG) {
+    if (configPath) {
+        console.log("Environment variable overridden by command line config");
+    } else {
+        configPath = process.env.CONFIG;
+    }
+}
+
+if (!configPath) {
+    throw new Error('Must provide config file either with environment variable or command line argument');
+}
+
+var configFile = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 var config;
 
 isvalid(configFile, {
