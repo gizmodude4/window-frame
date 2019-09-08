@@ -21,3 +21,20 @@ img.background {
     background-repeat: no-repeat;
     background-size: cover;
 }
+
+.display {
+    display: block;
+    float: left;
+    position: fixed;
+    bottom: 15px;
+    color: #DDD;
+}
+
+.info {
+    margin: 5px 20px 5px 20px;
+    padding: 5px 20px 5px 20px;
+    font-size: 30px;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    background:rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}

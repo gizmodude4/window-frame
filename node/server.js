@@ -29,6 +29,7 @@ isvalid(configFile, {
             }}
         }},
         'atmosphere': {type: Array, required: true, schema: {
+            'name': {type: String, required: false},
             'image': {type: String, required: true},
             'audio': {type: Array, required: false, schema: {
                 'link': {type: String, required: true},

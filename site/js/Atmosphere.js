@@ -1,7 +1,12 @@
 class Atmosphere {
-    constructor(image, audio) {
+    constructor(image, name, audio) {
       this.image = image;
+      this.name = name;
       this.audio = audio || [];
+    }
+
+    getName() {
+        return this.name;
     }
 
     getImage() {

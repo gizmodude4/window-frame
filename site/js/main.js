@@ -5,7 +5,9 @@ import Atmosphere from './Atmosphere.js';
 import AudioEffect from './AudioEffect.js';
 import AudioManager from './AudioManager.js';
 
-var display = document.getElementById('background');
+var image = document.getElementById('background');
+var sceneDisplay = document.getElementById('sceneDisplay');
+var songDisplay = document.getElementById('songDisplay');
 
 var windowFrame;
 
@@ -14,7 +16,7 @@ function getScenesListener() {
     var scenes = parseScenes(returnConfig);
     var songAudioManager = new AudioManager();
     var atmosphereAudioManager = new AudioManager();
-    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], display, songAudioManager, atmosphereAudioManager);
+    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, songAudioManager, atmosphereAudioManager);
     windowFrame.showScene(scenes[0]);
     var socket = new WebSocket('ws://localhost:9090');
     socket.onmessage = handleAction;
@@ -36,7 +38,7 @@ function parseScenes(sceneConfigs) {
                     atmosphereAudio.push(toSceneAudio(audioConfig));
                 })
             }
-            atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereAudio))
+            atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereConfig['name'], atmosphereAudio))
         });
         scenes.push(new Scene(songs, atmosphere, sceneConfig['endTime']));
     });

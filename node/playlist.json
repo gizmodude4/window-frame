@@ -48,6 +48,7 @@
             ],
             "atmosphere": [
                 {
+                    "name": "Cyberpunk Alley",
                     "image": "assets/alley.gif",
                     "audio": [
                         {
@@ -95,6 +96,7 @@
                     ]
                 },
                 {
+                    "name": "Cyberpunk Alley (Silent)",
                     "image": "assets/alley.gif"
                 }
             ]
@@ -130,6 +132,7 @@
             ],
             "atmosphere": [
                 {
+                    "name": "Jungle Waterfall",
                     "image": "assets/landscape.gif",
                     "audio": [
                         {
@@ -149,6 +152,7 @@
                     ]
                 },
                 {
+                    "name": "Jungle Waterfall (Silent)",
                     "image": "assets/landscape.gif"
                 }
             ]
@@ -184,6 +188,7 @@
             ],
             "atmosphere": [
                 {
+                    "name": "Space Mountain",
                     "image": "assets/space.gif",
                     "audio": [
                         {
@@ -202,6 +207,7 @@
                     ]
                 },
                 {
+                    "name": "Space Mountain (Silent)",
                     "image": "assets/space.gif"
                 }
             ]

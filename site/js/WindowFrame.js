@@ -1,11 +1,13 @@
 const Pizzicato = window.Pizzicato;
 
 class WindowFrame {
-    constructor(scenes, type, displayTag, songAudioManager, atmosphereAudioManager) {
+    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, songAudioManager, atmosphereAudioManager) {
         this.type = type || 'playlist';
         this.songAudioManager = songAudioManager;
         this.atmosphereAudioManager = atmosphereAudioManager;
         this.displayTag = displayTag;
+        this.sceneDisplay = sceneDisplay;
+        this.songDisplay = songDisplay;
         this.scenes = scenes;
         this.sceneIndex = 0;
         this.songIndex = 0;
@@ -22,6 +24,7 @@ class WindowFrame {
         if (this.songIndex >= scene.getSongsCount()) {
             this.songIndex = 0;
         }
+        displayMessage(this.songDisplay, getSongTitle(scene.getSong(this.songIndex).getLink()));
         this.playSong(scene.getSong(this.songIndex), cb);
         this.switchingAudio = false;
     }
@@ -32,6 +35,7 @@ class WindowFrame {
         if (this.atmosphereIndex >= scene.getAtmosphereCount()) {
             this.atmosphereIndex = 0;
         }
+        displayMessage(this.sceneDisplay, scene.getAtmosphere(this.atmosphereIndex).getName());
         this.showImage(scene.getAtmosphere(this.atmosphereIndex).getImage());
         this.playAtmosphere(scene.getAtmosphere(this.atmosphereIndex), cb);
     }
@@ -67,11 +71,12 @@ class WindowFrame {
         this.atmosphereIndex = 0;
         this.switchingAudio = true;
         this.switchingAtmosphere = true;
+        displayMessage(this.sceneDisplay, scene.getAtmosphere(0).getName());
+        displayMessage(this.songDisplay, getSongTitle(scene.getSong(0).getLink()));
         this.showImage(scene.getAtmosphere(0).getImage());
         this.playSong(scene.getSong(0), () => {
             this.playAtmosphere(scene.getAtmosphere(0), cb); 
         });
-        this.switchingAudio = false;
         this.switchingAudio = false;
     }
 
@@ -150,6 +155,27 @@ function getTimeUntil(time) {
         setTime.setTime(setTime.getTime() + 24*60*60*1000);
     }
     return setTime.getTime() - now.getTime();
+}
+
+function displayMessage(tag, text) {
+    if (text) {
+        tag.textContent = text;
+        tag.style.opacity = 1;
+        setTimeout(() => {
+            var fadeOut = setInterval(() => {
+                tag.style.opacity = tag.style.opacity - 0.01;
+                if (tag.style.opacity <= 0) {
+                    clearInterval(fadeOut);
+                }
+            }, 10);
+        }, 5000);
+    }
+}
+
+function getSongTitle(path) {
+    var split = path.split("/");
+    var last = split[split.length-1];
+    return last.substring(0, last.lastIndexOf('.'));
 }
 
 export default WindowFrame;
