@@ -1,10 +1,12 @@
 class AudioManager {
-    constructor() {
+    constructor(audioEffectCreator) {
+        this.audioEffectCreator = audioEffectCreator;
         this.currentlyPlayingAudio = [];
     }
 
-    playAudio(audioDefinition, onEndCb, finishedCb) {
-        getAudio(audioDefinition, audio => {
+    playAudio(audioDefinition, initialEffects, onEndCb, finishedCb) {
+        console.log('playing ' + audioDefinition.getLink());
+        getAudio(audioDefinition, initialEffects, audio => {
             audio.play();
             this.currentlyPlayingAudio.push(audio);
             audio.on("end", () => audio.disconnect());
@@ -27,7 +29,8 @@ class AudioManager {
     }
 }
 
-function getAudio(audio, cb) {
+function getAudio(audio, initialEffects, cb) {
+    var self = this;
     var newAudio = new Pizzicato.Sound({ 
         source: 'file',
         options: { 
@@ -39,24 +42,15 @@ function getAudio(audio, cb) {
         }
         }, function() {
             audio.getAudioEffects().forEach(effect => {
-                var newEffect = createEffect(effect);
+                var newEffect = self.audioEffectCreator.createEffect(effect);
                 newAudio.addEffect(newEffect);
             });
+            if (initialEffects && initialEffects.length > 0) {
+                console.log('adding initial effects for ' + audio.getLink());
+                initialEffects.forEach(effect => newAudio.addEffect(effect));
+            }
             cb(newAudio);
         });
-}
-
-function createEffect(effect) {
-    switch(effect.type) {
-        case 'lpf':
-            return new Pizzicato.Effects.LowPassFilter(effect.config);
-        case 'hpf':
-            return new Pizzicato.Effects.HighPassFilter(effect.config);
-        case 'reverb':
-            return new Pizzicato.Effects.Reverb(effect.config);
-        default:
-            throw 'Unknown effect type ' + effect.type; 
-    }
 }
 
 export default AudioManager;

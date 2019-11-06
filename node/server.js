@@ -32,14 +32,14 @@ isvalid(configFile, {
     'switchType': {type: String, required: false},
     'scenes': {type: Array, len: '1-', schema: {
         'endTime': {type: String, required: false},
+        'audioEffects': {type: Array, required: false, schema: {
+            'effectType': {type: String, required: true},
+            'config': {type: Object, required: true, unknownKeys: 'allow'}
+        }},
         'songs': {type: Array, required: true, schema: {
             'link': {type: String, required: true},
             'volume': {type: Number, required: false},
-            'fadeDuration': {type: Number, required: false},
-            'audioEffects': {type: Array, required: false, schema: {
-                'effectType': {type: String, required: true},
-                'config': {type: Object, required: true, unknownKeys: 'allow'}
-            }}
+            'fadeDuration': {type: Number, required: false}
         }},
         'atmosphere': {type: Array, required: true, schema: {
             'name': {type: String, required: false},
@@ -57,7 +57,7 @@ isvalid(configFile, {
     }}
 }, function(err, validData){
     if (err) {
-        throw new Error('Error parsing config: ' + err);
+        throw new Error('Error parsing config: ' + err.stack());
     }
     config = validData;
 });

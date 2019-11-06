@@ -1,6 +1,7 @@
 class Scene {
-    constructor(songs, atmosphere, endTime) {
+    constructor(songs, songSoundEffects, atmosphere, endTime) {
       this.songs = songs;
+      this.songSoundEffects = songSoundEffects;
       this.atmosphere = atmosphere;
       this.endTime = endTime;
     }
@@ -11,6 +12,10 @@ class Scene {
 
     getSongsCount() {
         return this.songs.length;
+    }
+
+    getSongSoundEffects() {
+        return this.songSoundEffects;
     }
 
     getAllAtmospheres() {

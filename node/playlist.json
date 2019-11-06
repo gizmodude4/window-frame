@@ -2,48 +2,32 @@
     "switchType": "playlist",
     "scenes": [
         {
+            "audioEffects": [
+                {
+                    "effectType": "hpf",
+                    "config": {
+                        "frequency": 100
+                    }
+                },
+                {
+                    "effectType": "reverb",
+                    "config": {
+                        "time": 1.63,
+                        "decay": 2,
+                        "mix": 0.5
+                    }
+                }
+            ],
             "songs": [
                 {
                     "link": "assets/songs/cyberpunk1.mp3",
                     "volume": 100,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "hpf",
-                            "config": {
-                                "frequency": 100
-                            }
-                        },
-                        {
-                            "effectType": "reverb",
-                            "config": {
-                                "time": 1.63,
-                                "decay": 2,
-                                "mix": 0.5
-                            }
-                        }
-                    ]
+                    "fadeDuration": 2000
                 },
                 {
                     "link": "assets/songs/cyberpunk2.mp3",
                     "volume": 100,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "hpf",
-                            "config": {
-                                "frequency": 100
-                            }
-                        },
-                        {
-                            "effectType": "reverb",
-                            "config": {
-                                "time": 1.63,
-                                "decay": 2,
-                                "mix": 0.5
-                            }
-                        }
-                    ]
+                    "fadeDuration": 2000
                 }
             ],
             "atmosphere": [
@@ -54,44 +38,12 @@
                         {
                             "link": "assets/songs/Rain-sound-loop.wav",
                             "volume": 50,
-                            "loop": true,
-                            "audioEffects": [
-                                {
-                                    "effectType": "hpf",
-                                    "config": {
-                                        "frequency": 500
-                                    }
-                                },
-                                {
-                                    "effectType": "reverb",
-                                    "config": {
-                                        "time": 1.63,
-                                        "decay": 2,
-                                        "mix": 0.5
-                                    }
-                                }
-                            ]
+                            "loop": true
                         },
                         {
                             "link": "assets/songs/city_sounds.mp3",
                             "volume": 50,
-                            "loop": true,
-                            "audioEffects": [
-                                {
-                                    "effectType": "hpf",
-                                    "config": {
-                                        "frequency": 500
-                                    }
-                                },
-                                {
-                                    "effectType": "reverb",
-                                    "config": {
-                                        "time": 1.63,
-                                        "decay": 2,
-                                        "mix": 0.5
-                                    }
-                                }
-                            ]
+                            "loop": true
                         }
                     ]
                 },
@@ -102,32 +54,24 @@
             ]
         },
         {
+            "audioEffects": [
+                {
+                    "effectType": "lpf",
+                    "config": {
+                        "frequency": 15000
+                    }
+                }
+            ],
             "songs": [
                 {
                     "link": "assets/songs/Tired of Wandering - Wandering from Tired.mp3",
                     "volume": 75,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "lpf",
-                            "config": {
-                                "frequency": 15000
-                            }
-                        }
-                    ]
+                    "fadeDuration": 2000
                 },
                 {
                     "link": "assets/songs/danimal.mp3",
                     "volume": 75,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "lpf",
-                            "config": {
-                                "frequency": 15000
-                            }
-                        }
-                    ]
+                    "fadeDuration": 2000
                 }
             ],
             "atmosphere": [
@@ -158,32 +102,24 @@
             ]
         },
         {
+            "audioEffects": [
+                {
+                    "effectType": "hpf",
+                    "config": {
+                        "frequency": 500
+                    }
+                }
+            ],
             "songs": [
                 {
                     "link": "assets/songs/Crunk Knight.mp3",
                     "volume": 75,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "hpf",
-                            "config": {
-                                "frequency": 500
-                            }
-                        }
-                    ]
+                    "fadeDuration": 2000
                 },
                 {
                     "link": "assets/songs/Tired of Wandering - Wandering from Tired.mp3",
                     "volume": 75,
-                    "fadeDuration": 2000,
-                    "audioEffects": [
-                        {
-                            "effectType": "hpf",
-                            "config": {
-                                "frequency": 500
-                            }
-                        }
-                    ]
+                    "fadeDuration": 2000
                 }
             ],
             "atmosphere": [

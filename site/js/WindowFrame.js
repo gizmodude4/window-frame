@@ -25,7 +25,7 @@ class WindowFrame {
             this.songIndex = 0;
         }
         displayMessage(this.songDisplay, getSongTitle(scene.getSong(this.songIndex).getLink()));
-        this.playSong(scene.getSong(this.songIndex), cb);
+        this.playSong(scene.getSong(this.songIndex), scene.getSongSoundEffects(), cb);
         this.switchingAudio = false;
     }
 
@@ -74,7 +74,7 @@ class WindowFrame {
         displayMessage(this.sceneDisplay, scene.getAtmosphere(0).getName());
         displayMessage(this.songDisplay, getSongTitle(scene.getSong(0).getLink()));
         this.showImage(scene.getAtmosphere(0).getImage());
-        this.playSong(scene.getSong(0), () => {
+        this.playSong(scene.getSong(0), scene.getSongSoundEffects(), () => {
             this.playAtmosphere(scene.getAtmosphere(0), cb); 
         });
         this.switchingAudio = false;
@@ -84,9 +84,9 @@ class WindowFrame {
         this.displayTag.style.backgroundImage = 'url(' + image + ')';
     }
 
-    playSong(song, cb) {
+    playSong(song, soundEffects, cb) {
         this.songAudioManager.stopAllPlayingAudio();
-        this.songAudioManager.playAudio(song, () => {
+        this.songAudioManager.playAudio(song, soundEffects, () => {
             this.playNextSong();
         }, cb);
     }
@@ -97,7 +97,7 @@ class WindowFrame {
         var self = this;
         atmosphere.getAudio().forEach(audio => {
             promises.push(new Promise((resolve) => {
-                self.atmosphereAudioManager.playAudio(audio, null, resolve);
+                self.atmosphereAudioManager.playAudio(audio, [], null, resolve);
             }));
         });
         if (promises.length > 0) {

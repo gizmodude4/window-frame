@@ -3,6 +3,7 @@ import SceneAudio from './SceneAudio.js';
 import Scene from './Scene.js';
 import Atmosphere from './Atmosphere.js';
 import AudioEffect from './AudioEffect.js';
+import AudioEffectCreator from './AudioEffectCreator.js';
 import AudioManager from './AudioManager.js';
 
 var image = document.getElementById('background');
@@ -14,8 +15,8 @@ var windowFrame;
 function getScenesListener() {
     var returnConfig = JSON.parse(this.responseText)
     var scenes = parseScenes(returnConfig);
-    var songAudioManager = new AudioManager();
-    var atmosphereAudioManager = new AudioManager();
+    var songAudioManager = new AudioManager(AudioEffectCreator);
+    var atmosphereAudioManager = new AudioManager(AudioEffectCreator);
     windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, songAudioManager, atmosphereAudioManager);
     windowFrame.showScene(scenes[0]);
     var socket = new WebSocket('ws://localhost:9090');
@@ -27,6 +28,7 @@ function parseScenes(sceneConfigs) {
     sceneConfigs['scenes'].forEach(function(sceneConfig) {
         var songs = [];
         var atmosphere = [];
+        var songAudioEffects = toAudioEffects(sceneConfig['audioEffects']);
         sceneConfig['songs'].forEach(function(songConfig){
             songs.push(toSceneAudio(songConfig))
         });
@@ -40,23 +42,26 @@ function parseScenes(sceneConfigs) {
             }
             atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereConfig['name'], atmosphereAudio))
         });
-        scenes.push(new Scene(songs, atmosphere, sceneConfig['endTime']));
+        scenes.push(new Scene(songs, songAudioEffects, atmosphere, sceneConfig['endTime']));
     });
     return scenes;
 }
 
-function toSceneAudio(audioConfig) {
+function toAudioEffects(audioEffectConfig) {
     var audioEffects = [];
-    if (audioConfig['audioEffects'] && audioConfig['audioEffects'].length > 0) {
-        audioConfig['audioEffects'].forEach(effectConfig => {
-            audioEffects.push(new AudioEffect(effectConfig['effectType'], effectConfig['config']));
+    if (audioEffectConfig && audioEffectConfig.length > 0) {
+        audioEffectConfig.forEach(effectConfig => {
+            audioEffects.push(AudioEffectCreator.createEffect(new AudioEffect(effectConfig['effectType'], effectConfig['config'])));
         });
     }
+    return audioEffects;
+}
+
+function toSceneAudio(audioConfig) {
     return new SceneAudio(audioConfig['link'],
         audioConfig['volume'],
         audioConfig['fadeDuration'],
-        audioConfig['loop'],
-        audioEffects);
+        audioConfig['loop']);
 }
 
 function handleAction(event) {
