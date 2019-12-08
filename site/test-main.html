@@ -3,6 +3,7 @@
   <meta charset='utf-8'>
 
   <title>Window Pane</title>
+  <script src='js/Pizzicato.js'></script>
 </head>
 
 <body>
@@ -11,8 +12,25 @@
     <div id='sceneDisplay' class='info'></div>
     <div id='songDisplay' class='info'></div>
   </div>
-  <audio autoplay>
-    <source src="http://localhost:8080/music"></src>
+  <audio id="player" autoplay controls crossorigin="anonymous">
+    <!--source src="http://listen.radiogibson.net:80/radiogibson.opus"></src>-->
+    <source src="http://localhost:8002/stream"></src>
   </audio>
+  <script>
+    var audioPlayer = document.getElementById("player");
+    var lpf = new Pizzicato.Effects.LowPassFilter({"frequency": 500});
+    var stream;
+    audioPlayer.addEventListener('canplay', function(){
+      stream = new Pizzicato.Sound({
+        'source': 'audioElement',
+        'options': {
+          'audioElement': audioPlayer
+        }
+      });
+      stream.addEffect(lpf);
+      stream.play();
+    });
+    
+  </script>
 </body>
 </html>
