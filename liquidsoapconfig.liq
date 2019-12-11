@@ -3,9 +3,9 @@ set("server.telnet", true)
 set("server.telnet.port", 1234)
 set("harbor.bind_addr","127.0.0.1")
 # Music playlists
-music1 = playlist("F:/chill-music/chillmusicplaylist.m3u")
+music1 = playlist(mode="randomize",reload=1,reload_mode="rounds","C:/Users/Window/window-frame/chillmusicplaylist.m3u")
 # If something goes wrong, we'll play this
-security = single("F:/window-frame/site/assets/songs/ahhhohhh.mp3")
+security = single("C:/Users/Window/window-frame/site/assets/songs/danimal.mp3")
 # Start building the feed with music
 radio = random([music1])
 radio = crossfade(duration=5.0,fade_out=3.,fade_in=3., smart=true, conservative=true, radio)
