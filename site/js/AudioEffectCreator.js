@@ -1,3 +1,5 @@
+'use strict';
+
 class AudioEffectCreator {
     static createEffect(effect) {
         switch(effect.type) {

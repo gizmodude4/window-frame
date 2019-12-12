@@ -1,3 +1,5 @@
+'use strict';
+
 class AudioEffect {
     constructor(type, config) {
         this.type = type;

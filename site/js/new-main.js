@@ -9,6 +9,7 @@ import AudioEffectCreator from './AudioEffectCreator.js';
 import AudioManager from './AudioManager.js';
 
 var image = document.getElementById('background');
+var stream = document.getElementById('player');
 var sceneDisplay = document.getElementById('sceneDisplay');
 var songDisplay = document.getElementById('songDisplay');
 
@@ -17,23 +18,18 @@ var windowFrame;
 function getScenesListener() {
     var returnConfig = JSON.parse(this.responseText)
     var scenes = parseScenes(returnConfig);
-    var songAudioManager = new AudioManager(AudioEffectCreator);
     var atmosphereAudioManager = new AudioManager(AudioEffectCreator);
-    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, songAudioManager, atmosphereAudioManager);
+    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, stream, atmosphereAudioManager);
     windowFrame.showScene(scenes[0]);
-    var socket = new WebSocket('ws://localhost:9090');
+    var socket = new WebSocket('ws://localhost:8080/scenes/' + scenes[0].getId() + '/updates/subscribe');
     socket.onmessage = handleAction;
 }
 
 function parseScenes(sceneConfigs) {
     var scenes = [];
     sceneConfigs['scenes'].forEach(function(sceneConfig) {
-        var songs = [];
         var atmosphere = [];
         var songAudioEffects = toAudioEffects(sceneConfig['audioEffects']);
-        sceneConfig['songs'].forEach(function(songConfig){
-            songs.push(toSceneAudio(songConfig))
-        });
 
         sceneConfig['atmosphere'].forEach(function(atmosphereConfig) {
             var atmosphereAudio = [];
@@ -44,7 +40,7 @@ function parseScenes(sceneConfigs) {
             }
             atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereConfig['name'], atmosphereAudio))
         });
-        scenes.push(new Scene(songs, songAudioEffects, atmosphere, sceneConfig['endTime']));
+        scenes.push(new Scene(sceneConfig['id'], sceneConfig['stream'], songAudioEffects, atmosphere, sceneConfig['endTime']));
     });
     return scenes;
 }

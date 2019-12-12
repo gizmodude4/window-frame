@@ -383,7 +383,8 @@
         }
         
         function initializeWithAudioElement(options, callback) {
-            console.log('called with initialize audio element');
+			console.log('called with initialize audio element');
+			console.log(options.audioElement);
             this.getRawSourceNode = function() {
                 return Pizzicato.context.createMediaStreamSource(options.audioElement.mozCaptureStream());
             };

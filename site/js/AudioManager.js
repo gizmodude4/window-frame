@@ -1,3 +1,5 @@
+'use strict';
+
 class AudioManager {
     constructor(audioEffectCreator) {
         this.audioEffectCreator = audioEffectCreator;
@@ -6,17 +8,26 @@ class AudioManager {
 
     playAudio(audioDefinition, initialEffects, onEndCb, finishedCb) {
         console.log('playing ' + audioDefinition.getLink());
-        getAudio(audioDefinition, initialEffects, audio => {
-            audio.play();
-            this.currentlyPlayingAudio.push(audio);
-            audio.on("end", () => audio.disconnect());
-            if (onEndCb) {
-                audio.on('end', onEndCb);
-            }
+        try {
+            getAudio(audioDefinition, initialEffects, audio => {
+                audio.play();
+                this.currentlyPlayingAudio.push(audio);
+                audio.on("end", () => audio.disconnect());
+                if (onEndCb) {
+                    audio.on('end', onEndCb);
+                }
+                if (finishedCb) {
+                    finishedCb();
+                }
+            });
+        } catch(e) {
+            console.log("Error playing song " + audioDefinition.getLink() + ". Skipping...")
+            console.log(e.message);
             if (finishedCb) {
                 finishedCb();
             }
-        });
+            onEndCb();
+        }
     }
 
     stopAllPlayingAudio() {
@@ -24,6 +35,7 @@ class AudioManager {
             audio.off('end');
             audio.on("end", () => audio.disconnect());
             audio.stop();
+            audio = null;
         });
         this.currentlyPlayingAudio = [];
     }
@@ -40,7 +52,10 @@ function getAudio(audio, initialEffects, cb) {
             attack: audio.getFadeDuration()/1000,
             loop: audio.getLoop()
         }
-        }, function() {
+        }, function (err) {
+            if (err) {
+                throw err;
+            }
             audio.getAudioEffects().forEach(effect => {
                 var newEffect = self.audioEffectCreator.createEffect(effect);
                 newAudio.addEffect(newEffect);

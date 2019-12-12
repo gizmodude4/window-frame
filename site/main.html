@@ -3,16 +3,10 @@
   <meta charset='utf-8'>
 
   <title>Window Pane</title>
-  <meta name='description' content='The HTML5 Herald'>
   <meta name='author' content='ChromaStar'>
   <link rel='stylesheet' type='text/css' href='style.css'>
-  <script src='js/Pizzicato.min.js' type='module'></script>
-  <script src='js/AudioEffect.js' type='module'></script>
-  <script src='js/SceneAudio.js' type='module'></script>
-  <script src='js/Scene.js' type='module'></script>
-  <script scr='js/Atmosphere.js' type='module'></script>
-  <script src='js/WindowFrame.js' type='module'></script>
-  <script src='js/main.js' type='module'></script>
+  <script src='js/Pizzicato.js' type='module'></script>
+  <script src='js/new-main.js' type='module'></script>
 </head>
 
 <body>
@@ -21,5 +15,9 @@
     <div id='sceneDisplay' class='info'></div>
     <div id='songDisplay' class='info'></div>
   </div>
+  <audio id="player" autoplay crossOrigin="anonymous">
+    <!--source src="http://listen.radiogibson.net:80/radiogibson.opus"></src>-->
+    <source src="http://localhost:8002/stream"></src>
+  </audio>
 </body>
 </html>

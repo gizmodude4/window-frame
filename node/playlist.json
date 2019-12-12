@@ -2,6 +2,7 @@
     "switchType": "playlist",
     "scenes": [
         {
+            "id": "cyberpunk",
             "audioEffects": [
                 {
                     "effectType": "hpf",
@@ -18,18 +19,7 @@
                     }
                 }
             ],
-            "songs": [
-                {
-                    "link": "assets/songs/cyberpunk1.mp3",
-                    "volume": 100,
-                    "fadeDuration": 2000
-                },
-                {
-                    "link": "assets/songs/cyberpunk2.mp3",
-                    "volume": 100,
-                    "fadeDuration": 2000
-                }
-            ],
+            "stream": "http://localhost:8002/stream",
             "atmosphere": [
                 {
                     "name": "Cyberpunk Alley",
@@ -54,6 +44,7 @@
             ]
         },
         {
+            "id": "jungle",
             "audioEffects": [
                 {
                     "effectType": "lpf",
@@ -62,18 +53,7 @@
                     }
                 }
             ],
-            "songs": [
-                {
-                    "link": "assets/songs/Tired of Wandering - Wandering from Tired.mp3",
-                    "volume": 75,
-                    "fadeDuration": 2000
-                },
-                {
-                    "link": "assets/songs/danimal.mp3",
-                    "volume": 75,
-                    "fadeDuration": 2000
-                }
-            ],
+            "stream": "http://localhost:8002/stream",
             "atmosphere": [
                 {
                     "name": "Jungle Waterfall",
@@ -102,6 +82,7 @@
             ]
         },
         {
+            "id": "space",
             "audioEffects": [
                 {
                     "effectType": "hpf",
@@ -110,18 +91,7 @@
                     }
                 }
             ],
-            "songs": [
-                {
-                    "link": "assets/songs/Crunk Knight.mp3",
-                    "volume": 75,
-                    "fadeDuration": 2000
-                },
-                {
-                    "link": "assets/songs/Tired of Wandering - Wandering from Tired.mp3",
-                    "volume": 75,
-                    "fadeDuration": 2000
-                }
-            ],
+            "stream": "http://localhost:8002/stream",
             "atmosphere": [
                 {
                     "name": "Space Mountain",

@@ -1,10 +1,8 @@
 const express = require('express'),
+    enableWs = require('express-ws')
     fs = require('fs'),
-    isPi = require('detect-rpi'),
     isvalid = require('isvalid'),
-    WebSocket = require('ws');
-
-var Gpio, scene, song, effect;
+    Parser = require('icecast-parser');
 
 var configPath;
 var args = require('minimist')(process.argv.slice(2));
@@ -31,16 +29,13 @@ var config;
 isvalid(configFile, {
     'switchType': {type: String, required: false},
     'scenes': {type: Array, len: '1-', schema: {
+        'id': {type: String, required: true},
         'endTime': {type: String, required: false},
         'audioEffects': {type: Array, required: false, schema: {
             'effectType': {type: String, required: true},
             'config': {type: Object, required: true, unknownKeys: 'allow'}
         }},
-        'songs': {type: Array, required: true, schema: {
-            'link': {type: String, required: true},
-            'volume': {type: Number, required: false},
-            'fadeDuration': {type: Number, required: false}
-        }},
+        'stream': {type: String, required: true},
         'atmosphere': {type: Array, required: true, schema: {
             'name': {type: String, required: false},
             'image': {type: String, required: true},
@@ -60,67 +55,59 @@ isvalid(configFile, {
         throw new Error('Error parsing config: ' + err.stack());
     }
     config = validData;
+    setUpServer(config);
 });
 
-// Set up interrupts
-if (isPi()) {
-    Gpio = require('onoff').Gpio;
-    scene = new Gpio(4, 'in', 'rising', {debounceTimeout: 10});
-    song = new Gpio(5, 'in', 'rising', {debounceTimeout: 10});
-    effect = new Gpio(6, 'in', 'rising', {debounceTimeout: 10});
-}
-
-// Set up express app
-var app = express();
-
-app.get('/scenes', function(req, res) {
-	res.header('Access-Control-Allow-Origin', '*');
-    res.send(config);
-});
-
-app.listen(8080);
-
-const wss = new WebSocket.Server({ port: 9090});
-wss.on('connection', setUpInterrupts);
-wss.on('close', clearInterrupts);
-
-process.on('SIGINT', () => {
-  if (isPi()){
-    scene.unexport();
-    song.unexport();
-    effect.unexport();
-  }
-});
-
-function setUpInterrupts(ws) {
-    if (isPi()) {
-        scene.watch((err, value) => {
-            if (err) {
-                throw err;
-            }
-            ws.send('switch_scene');
+var socketConnections = {};
+var streamParsers = [];
+function setUpServer() {
+    // Websocket
+    config.scenes.forEach(function(scene){
+        socketConnections[scene.id] = [];
+        var parser = new Parser(scene.stream);
+        parser.on('metadata', function(metadata) {
+            sendMetadata(scene.id, metadata);
         });
-        
-        song.watch((err, value) => {
-            if (err) {
-                throw err;
-            }
-            ws.send('switch_song');
-        });
-        
-        effect.watch((err, value) => {
-            if (err) {
-                throw err;
-            }
-            ws.send('switch_effect');
-        });
+        streamParsers.push(parser);
+    });
+
+    function sendMetadata(streamId, metadata) {
+        if (socketConnections[streamId]) {
+            socketConnections[streamId].forEach(function(ws) {
+                ws.send(metadata)
+            })
+        }
     }
+
+    // Set up express app
+    var app = express();
+    enableWs(app);
+
+    app.get('/scenes', function(req, res) {
+        res.header('Access-Control-Allow-Origin', '*');
+        res.send(config);
+    });
+
+    app.ws('/scenes/:sceneId/updates/subscribe', function(ws, req) {
+        addToListeners(sceneId, ws);
+        ws.on('close', function() {
+            removeFromListeners(sceneId, ws);
+        })
+    });
+
+    app.listen(8080);
 }
 
-function clearInterrupts() {
-    if (isPi()) {
-        scene.unwatch();        
-        song.unwatch(); 
-        effect.unwatch(); 
+function addToListeners(sceneId, ws) {
+    socketConnections[sceneId].push(ws);
+}
+
+function removeFromListeners(sceneId, ws) {
+    var conns = socketConnections[sceneId];
+    for (var i = 0; i < conns.length; i++) {
+        if (ws == cons[i]) {
+            socketConnections[sceneId].splice(i,1);
+            return;
+        }
     }
 }

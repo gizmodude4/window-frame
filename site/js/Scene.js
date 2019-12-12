@@ -1,17 +1,20 @@
+'use strict';
+
 class Scene {
-    constructor(songs, songSoundEffects, atmosphere, endTime) {
-      this.songs = songs;
+    constructor(id, stream, songSoundEffects, atmosphere, endTime) {
+      this.id = id;
+      this.stream = stream;
       this.songSoundEffects = songSoundEffects;
       this.atmosphere = atmosphere;
       this.endTime = endTime;
     }
 
-    getSong(index) {
-        return this.songs[index];
+    getId() {
+        return this.id;
     }
 
-    getSongsCount() {
-        return this.songs.length;
+    getStream() {
+        return this.stream;
     }
 
     getSongSoundEffects() {

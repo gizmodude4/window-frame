@@ -1,3 +1,5 @@
+'use strict';
+
 class SceneAudio {
     constructor(link, volume, fadeDuration, loop, audioEffects) {
         this.link = link;

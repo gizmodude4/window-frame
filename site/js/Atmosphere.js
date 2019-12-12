@@ -1,3 +1,5 @@
+'use strict';
+
 class Atmosphere {
     constructor(image, name, audio) {
       this.image = image;

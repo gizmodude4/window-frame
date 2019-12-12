@@ -1,16 +1,18 @@
+'use strict';
+
 const Pizzicato = window.Pizzicato;
 
 class WindowFrame {
-    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, songAudioManager, atmosphereAudioManager) {
+    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, audioStreamTag, atmosphereAudioManager) {
         this.type = type || 'playlist';
-        this.songAudioManager = songAudioManager;
+        this.audioStreamTag = audioStreamTag;
+        this.audioStream = undefined;
         this.atmosphereAudioManager = atmosphereAudioManager;
         this.displayTag = displayTag;
         this.sceneDisplay = sceneDisplay;
         this.songDisplay = songDisplay;
         this.scenes = scenes;
         this.sceneIndex = 0;
-        this.songIndex = 0;
         this.atmosphereIndex = 0;
         this.nextSceneTimeout = undefined;
         this.processingEvent = false;
@@ -18,15 +20,8 @@ class WindowFrame {
     }
 
     playNextSong(cb) {
-        this.switchingAudio = true;
-        var scene = this.scenes[this.sceneIndex];
-        this.songIndex++;
-        if (this.songIndex >= scene.getSongsCount()) {
-            this.songIndex = 0;
-        }
-        displayMessage(this.songDisplay, getSongTitle(scene.getSong(this.songIndex).getLink()));
-        this.playSong(scene.getSong(this.songIndex), scene.getSongSoundEffects(), cb);
-        this.switchingAudio = false;
+        // Implement this later
+        cb();
     }
 
     playNextAtmosphere(cb) {
@@ -67,14 +62,14 @@ class WindowFrame {
                 }, 1000);
             }, getTimeUntil(scene.getEndTime()));
         }
-        this.songIndex = 0;
         this.atmosphereIndex = 0;
         this.switchingAudio = true;
         this.switchingAtmosphere = true;
-        displayMessage(this.sceneDisplay, scene.getAtmosphere(0).getName());
-        displayMessage(this.songDisplay, getSongTitle(scene.getSong(0).getLink()));
+        //displayMessage(this.sceneDisplay, scene.getAtmosphere(0).getName());
+        //displayMessage(this.songDisplay, getSongTitle(scene.getSong(0).getLink()));
+        console.log(scene.getAtmosphere(0));
         this.showImage(scene.getAtmosphere(0).getImage());
-        this.playSong(scene.getSong(0), scene.getSongSoundEffects(), () => {
+        this.playStream(scene.getStream(), scene.getSongSoundEffects(), () => {
             this.playAtmosphere(scene.getAtmosphere(0), cb); 
         });
         this.switchingAudio = false;
@@ -84,11 +79,22 @@ class WindowFrame {
         this.displayTag.style.backgroundImage = 'url(' + image + ')';
     }
 
-    playSong(song, soundEffects, cb) {
-        this.songAudioManager.stopAllPlayingAudio();
-        this.songAudioManager.playAudio(song, soundEffects, () => {
-            this.playNextSong();
-        }, cb);
+    playStream(streamLink, soundEffects, cb) {
+        var self = this;
+        this.audioStreamTag.src = streamLink;
+        this.audioStreamTag.oncanplaythrough = function() {
+            self.audioStream = new Pizzicato.Sound({
+                'source': 'audioElement',
+                'options': {
+                  'audioElement': self.audioStreamTag
+                }
+              });
+            soundEffects.forEach(function(soundEffect) {
+                self.audioStream.addEffect(soundEffect);
+            });
+            self.audioStream.play();
+            cb();
+        };
     }
 
     playAtmosphere(atmosphere, cb) {
