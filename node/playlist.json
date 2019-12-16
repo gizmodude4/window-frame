@@ -20,6 +20,7 @@
                 }
             ],
             "stream": "http://localhost:8002/stream",
+            "admin": "http://localhost:8005",
             "atmosphere": [
                 {
                     "name": "Cyberpunk Alley",
@@ -54,6 +55,7 @@
                 }
             ],
             "stream": "http://localhost:8002/stream",
+            "admin": "http://localhost:8005",
             "atmosphere": [
                 {
                     "name": "Jungle Waterfall",
@@ -92,6 +94,7 @@
                 }
             ],
             "stream": "http://localhost:8002/stream",
+            "admin": "http://localhost:8005",
             "atmosphere": [
                 {
                     "name": "Space Mountain",

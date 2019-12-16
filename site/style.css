@@ -37,4 +37,5 @@ img.background {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     background:rgba(0, 0, 0, 0.5);
     border-radius: 10px;
+    opacity: 0;
 }

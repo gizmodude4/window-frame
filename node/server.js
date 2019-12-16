@@ -1,8 +1,10 @@
 const express = require('express'),
-    enableWs = require('express-ws')
+    enableWs = require('express-ws'),
     fs = require('fs'),
+    http = require('http'),
     isvalid = require('isvalid'),
-    Parser = require('icecast-parser');
+    Parser = require('icecast-parser'),
+    request = require('request');
 
 var configPath;
 var args = require('minimist')(process.argv.slice(2));
@@ -26,6 +28,8 @@ if (!configPath) {
 var configFile = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 var config;
 
+var app = express();
+enableWs(app);
 isvalid(configFile, {
     'switchType': {type: String, required: false},
     'scenes': {type: Array, len: '1-', schema: {
@@ -36,6 +40,7 @@ isvalid(configFile, {
             'config': {type: Object, required: true, unknownKeys: 'allow'}
         }},
         'stream': {type: String, required: true},
+        'admin': {type: String, required: true},
         'atmosphere': {type: Array, required: true, schema: {
             'name': {type: String, required: false},
             'image': {type: String, required: true},
@@ -59,55 +64,100 @@ isvalid(configFile, {
 });
 
 var socketConnections = {};
-var streamParsers = [];
+var curStreamMeta = {};
 function setUpServer() {
     // Websocket
     config.scenes.forEach(function(scene){
-        socketConnections[scene.id] = [];
-        var parser = new Parser(scene.stream);
-        parser.on('metadata', function(metadata) {
-            sendMetadata(scene.id, metadata);
-        });
-        streamParsers.push(parser);
+        socketConnections[scene.id] = {};
+        curStreamMeta[scene.id] = undefined;
+        provisionIcecastParser(scene.stream, scene.id);
     });
 
-    function sendMetadata(streamId, metadata) {
-        if (socketConnections[streamId]) {
-            socketConnections[streamId].forEach(function(ws) {
-                ws.send(metadata)
-            })
-        }
-    }
-
     // Set up express app
-    var app = express();
-    enableWs(app);
-
+    app.use(function(req, res, next) {
+        res.header("Access-Control-Allow-Origin", "http://localhost:8000"); // update to match the domain you will make the request from
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.header("Access-Control-Allow-Methods", "GET, PUT");
+        next();
+    });
+    
     app.get('/scenes', function(req, res) {
-        res.header('Access-Control-Allow-Origin', '*');
         res.send(config);
     });
 
-    app.ws('/scenes/:sceneId/updates/subscribe', function(ws, req) {
-        addToListeners(sceneId, ws);
+    app.ws('/scenes/updates', function(ws, req) {
+        var origin = req.header('Origin');
         ws.on('close', function() {
-            removeFromListeners(sceneId, ws);
-        })
+            removeFromListeners(origin);
+        });
+        ws.on('message', function(message) {
+            addToListeners(message, origin, ws);
+            if (Object.keys(curStreamMeta).includes(message) && curStreamMeta[message]) {
+                ws.send(curStreamMeta[message]);
+            }
+        });
     });
 
+    app.put('/scenes/:sceneId/skip', function(req, res) {
+        var sceneId = req.params.sceneId;
+        var foundSeen = undefined;
+        config['scenes'].forEach(function(scene) {
+            if (scene.id = sceneId) {
+                foundSeen = scene;
+            }
+        })
+        if (!foundSeen) {
+            res.status(404).send("No scene with ID " + sceneId + " found");
+        } else {
+            var adminUrl = foundSeen.admin;
+            request.put(adminUrl + "/skip")
+                .on('response', function(response) {
+                    res.sendStatus(response.statusCode);
+                });
+        }
+    });
     app.listen(8080);
 }
 
-function addToListeners(sceneId, ws) {
-    socketConnections[sceneId].push(ws);
+function provisionIcecastParser(streamUrl, sceneId) {
+    var parser = new Parser( {
+        url: streamUrl,
+        emptyInterval: 60,
+        errorInterval: 60,
+        metadataInterval: 1
+    });
+    parser.on('metadata', function(metadata) {
+        if (curStreamMeta[sceneId] != metadata.StreamTitle) {
+            curStreamMeta[sceneId] = metadata.StreamTitle;
+            sendMetadata(sceneId, metadata.StreamTitle);
+        }
+    });
+    parser.on('error', function() {
+        console.error('An error happened connecting to ' + streamUrl + ' will try again soon...')
+    })
 }
 
-function removeFromListeners(sceneId, ws) {
-    var conns = socketConnections[sceneId];
-    for (var i = 0; i < conns.length; i++) {
-        if (ws == cons[i]) {
-            socketConnections[sceneId].splice(i,1);
-            return;
+function sendMetadata(streamId, metadata) {
+    if (socketConnections[streamId]) {
+        for (origin in socketConnections[streamId]) {
+            socketConnections[streamId][origin].send(metadata);
+        }
+    }
+}
+
+function addToListeners(sceneId, origin, ws) {
+    if (!Object.keys(curStreamMeta).includes(sceneId)) {
+        console.error('Could not find stream associated with stream ID ' + sceneId);
+    } else {
+        socketConnections[sceneId][origin] = ws;
+    }
+    
+}
+
+function removeFromListeners(origin) {
+    for (scene in socketConnections) {
+        if (Object.keys(socketConnections[scene]).includes(origin)) {
+            delete socketConnections[scene][origin];
         }
     }
 }

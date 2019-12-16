@@ -3,7 +3,7 @@
 const Pizzicato = window.Pizzicato;
 
 class WindowFrame {
-    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, audioStreamTag, atmosphereAudioManager) {
+    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, audioStreamTag, atmosphereAudioManager, socketMessager, displayMessage) {
         this.type = type || 'playlist';
         this.audioStreamTag = audioStreamTag;
         this.audioStream = undefined;
@@ -17,11 +17,15 @@ class WindowFrame {
         this.nextSceneTimeout = undefined;
         this.processingEvent = false;
         this.processingEventWatchdog = undefined;
+        this.socketMessager = socketMessager;
+        this.displayMessage = displayMessage;
     }
 
     playNextSong(cb) {
-        // Implement this later
-        cb();
+        var oReq = new XMLHttpRequest();
+        oReq.addEventListener('load', cb);
+        oReq.open('PUT', 'http://localhost:8080/scenes/' + this.scenes[this.sceneIndex].id  + '/skip');
+        oReq.send();
     }
 
     playNextAtmosphere(cb) {
@@ -30,7 +34,7 @@ class WindowFrame {
         if (this.atmosphereIndex >= scene.getAtmosphereCount()) {
             this.atmosphereIndex = 0;
         }
-        displayMessage(this.sceneDisplay, scene.getAtmosphere(this.atmosphereIndex).getName());
+        this.displayMessage(this.sceneDisplay, scene.getAtmosphere(this.atmosphereIndex).getName());
         this.showImage(scene.getAtmosphere(this.atmosphereIndex).getImage());
         this.playAtmosphere(scene.getAtmosphere(this.atmosphereIndex), cb);
     }
@@ -65,8 +69,10 @@ class WindowFrame {
         this.atmosphereIndex = 0;
         this.switchingAudio = true;
         this.switchingAtmosphere = true;
-        //displayMessage(this.sceneDisplay, scene.getAtmosphere(0).getName());
-        //displayMessage(this.songDisplay, getSongTitle(scene.getSong(0).getLink()));
+        this.displayMessage(this.sceneDisplay, scene.getAtmosphere(0).getName());
+        console.log(this.socket);
+        console.log(scene.getId());
+        this.socketMessager(scene.getId());
         console.log(scene.getAtmosphere(0));
         this.showImage(scene.getAtmosphere(0).getImage());
         this.playStream(scene.getStream(), scene.getSongSoundEffects(), () => {
@@ -161,27 +167,6 @@ function getTimeUntil(time) {
         setTime.setTime(setTime.getTime() + 24*60*60*1000);
     }
     return setTime.getTime() - now.getTime();
-}
-
-function displayMessage(tag, text) {
-    if (text) {
-        tag.textContent = text;
-        tag.style.opacity = 1;
-        setTimeout(() => {
-            var fadeOut = setInterval(() => {
-                tag.style.opacity = tag.style.opacity - 0.01;
-                if (tag.style.opacity <= 0) {
-                    clearInterval(fadeOut);
-                }
-            }, 10);
-        }, 5000);
-    }
-}
-
-function getSongTitle(path) {
-    var split = path.split("/");
-    var last = split[split.length-1];
-    return last.substring(0, last.lastIndexOf('.'));
 }
 
 export default WindowFrame;

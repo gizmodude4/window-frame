@@ -9,6 +9,7 @@ import AudioEffectCreator from './AudioEffectCreator.js';
 import AudioManager from './AudioManager.js';
 
 var image = document.getElementById('background');
+var stream = document.getElementById('player');
 var sceneDisplay = document.getElementById('sceneDisplay');
 var songDisplay = document.getElementById('songDisplay');
 
@@ -17,24 +18,16 @@ var windowFrame;
 function getScenesListener() {
     var returnConfig = JSON.parse(this.responseText)
     var scenes = parseScenes(returnConfig);
-    var songAudioManager = new AudioManager(AudioEffectCreator);
     var atmosphereAudioManager = new AudioManager(AudioEffectCreator);
-    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, songAudioManager, atmosphereAudioManager);
+    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, stream, atmosphereAudioManager, sendSocketMessage, messageDisplay);
     windowFrame.showScene(scenes[0]);
-    var socket = new WebSocket('ws://localhost:9090');
-    socket.onmessage = handleAction;
 }
 
 function parseScenes(sceneConfigs) {
     var scenes = [];
     sceneConfigs['scenes'].forEach(function(sceneConfig) {
-        var songs = [];
         var atmosphere = [];
         var songAudioEffects = toAudioEffects(sceneConfig['audioEffects']);
-        sceneConfig['songs'].forEach(function(songConfig){
-            songs.push(toSceneAudio(songConfig))
-        });
-
         sceneConfig['atmosphere'].forEach(function(atmosphereConfig) {
             var atmosphereAudio = [];
             if (atmosphereConfig['audio'] && atmosphereConfig['audio'].length > 0) {
@@ -44,7 +37,7 @@ function parseScenes(sceneConfigs) {
             }
             atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereConfig['name'], atmosphereAudio))
         });
-        scenes.push(new Scene(songs, songAudioEffects, atmosphere, sceneConfig['endTime']));
+        scenes.push(new Scene(sceneConfig['id'], sceneConfig['stream'], songAudioEffects, atmosphere, sceneConfig['endTime']));
     });
     return scenes;
 }
@@ -64,6 +57,10 @@ function toSceneAudio(audioConfig) {
         audioConfig['volume'],
         audioConfig['fadeDuration'],
         audioConfig['loop']);
+}
+
+function receiveMetadata(metadata) {
+    displayMessage(songDisplay, metadata.data);
 }
 
 function handleAction(event) {
@@ -94,10 +91,37 @@ function handleAction(event) {
     }
 }
 
+function displayMessage(tag, text) {
+    if (text) {
+        tag.textContent = text;
+        tag.style.opacity = 1;
+        setTimeout(() => {
+            var fadeOut = setInterval(() => {
+                tag.style.opacity = tag.style.opacity - 0.01;
+                if (tag.style.opacity <= 0) {
+                    clearInterval(fadeOut);
+                }
+            }, 10);
+        }, 5000);
+    }
+}
+
 var oReq = new XMLHttpRequest();
 oReq.addEventListener('load', getScenesListener);
 oReq.open('GET', 'http://localhost:8080/scenes');
 oReq.send();
+
+var socket = new WebSocket('ws://localhost:8080/scenes/updates');
+socket.onmessage = receiveMetadata;
+
+function sendSocketMessage(message) {
+    var retry = setInterval(function() {
+        if (socket.readyState == WebSocket.OPEN) {
+            socket.send(message);
+            clearInterval(retry);
+        }
+    }, 1000);
+}
 
 function keyToAction(key) {
     switch(key) {
