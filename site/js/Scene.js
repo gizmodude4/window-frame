@@ -1,9 +1,10 @@
 'use strict';
 
 class Scene {
-    constructor(id, stream, songSoundEffects, atmosphere, endTime) {
+    constructor(id, stream, streamVolume, songSoundEffects, atmosphere, endTime) {
       this.id = id;
       this.stream = stream;
+      this.streamVolume = streamVolume ? streamVolume : 100;
       this.songSoundEffects = songSoundEffects;
       this.atmosphere = atmosphere;
       this.endTime = endTime;
@@ -15,6 +16,10 @@ class Scene {
 
     getStream() {
         return this.stream;
+    }
+
+    getStreamVolume() {
+        return this.streamVolume;
     }
 
     getSongSoundEffects() {

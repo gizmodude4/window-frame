@@ -3,15 +3,18 @@
 class AudioManager {
     constructor(audioEffectCreator) {
         this.audioEffectCreator = audioEffectCreator;
-        this.currentlyPlayingAudio = [];
+        this.currentlyPlayingAudio = {};
     }
 
-    playAudio(audioDefinition, initialEffects, onEndCb, finishedCb) {
-        console.log('playing ' + audioDefinition.getLink());
+    playAudio(audioDefinition, initialEffects, volumeOverride, onEndCb, finishedCb) {
+        var self = this;
         try {
             getAudio(audioDefinition, initialEffects, audio => {
+                if (volumeOverride) {
+                    audio.volume = 0;
+                }
                 audio.play();
-                this.currentlyPlayingAudio.push(audio);
+                self.currentlyPlayingAudio[audioDefinition.getLink()] = audio;
                 audio.on("end", () => audio.disconnect());
                 if (onEndCb) {
                     audio.on('end', onEndCb);
@@ -30,19 +33,28 @@ class AudioManager {
         }
     }
 
-    stopAllPlayingAudio() {
-        this.currentlyPlayingAudio.forEach(audio => {
+    stopAllPlayingAudio(cb) {
+        var self = this;
+        Object.keys(self.currentlyPlayingAudio).forEach(audioLink => {
+            var audio = self.currentlyPlayingAudio[audioLink];
             audio.off('end');
             audio.on("end", () => audio.disconnect());
             audio.stop();
-            audio = null;
         });
-        this.currentlyPlayingAudio = [];
+        self.currentlyPlayingAudio = {};
+        if (cb) {
+            cb();
+        }
+    }
+
+    setCurrentlyPlayingVolume(audioLink, volume) {
+        if (audioLink in this.currentlyPlayingAudio) {
+            this.currentlyPlayingAudio[audioLink].volume = volume;
+        }
     }
 }
 
 function getAudio(audio, initialEffects, cb) {
-    var self = this;
     var newAudio = new Pizzicato.Sound({ 
         source: 'file',
         options: { 
@@ -57,11 +69,9 @@ function getAudio(audio, initialEffects, cb) {
                 throw err;
             }
             audio.getAudioEffects().forEach(effect => {
-                var newEffect = self.audioEffectCreator.createEffect(effect);
-                newAudio.addEffect(newEffect);
+                newAudio.addEffect(effect);
             });
             if (initialEffects && initialEffects.length > 0) {
-                console.log('adding initial effects for ' + audio.getLink());
                 initialEffects.forEach(effect => newAudio.addEffect(effect));
             }
             cb(newAudio);

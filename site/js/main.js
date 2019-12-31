@@ -19,7 +19,7 @@ function getScenesListener() {
     var returnConfig = JSON.parse(this.responseText)
     var scenes = parseScenes(returnConfig);
     var atmosphereAudioManager = new AudioManager(AudioEffectCreator);
-    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, stream, atmosphereAudioManager, sendSocketMessage, messageDisplay);
+    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, stream, atmosphereAudioManager, sendSocketMessage, displayMessage);
     windowFrame.showScene(scenes[0]);
 }
 
@@ -37,7 +37,7 @@ function parseScenes(sceneConfigs) {
             }
             atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereConfig['name'], atmosphereAudio))
         });
-        scenes.push(new Scene(sceneConfig['id'], sceneConfig['stream'], songAudioEffects, atmosphere, sceneConfig['endTime']));
+        scenes.push(new Scene(sceneConfig['id'], sceneConfig['stream'], sceneConfig['streamVolume'], songAudioEffects, atmosphere, sceneConfig['endTime']));
     });
     return scenes;
 }
@@ -56,7 +56,8 @@ function toSceneAudio(audioConfig) {
     return new SceneAudio(audioConfig['link'],
         audioConfig['volume'],
         audioConfig['fadeDuration'],
-        audioConfig['loop']);
+        audioConfig['loop'],
+        toAudioEffects(audioConfig['audioEffects']));
 }
 
 function receiveMetadata(metadata) {

@@ -2,12 +2,12 @@
     "switchType": "playlist",
     "scenes": [
         {
-            "id": "cyberpunk",
+            "id": "cyberpunk-roof",
             "audioEffects": [
                 {
                     "effectType": "hpf",
                     "config": {
-                        "frequency": 100
+                        "frequency": 200
                     }
                 },
                 {
@@ -20,95 +20,29 @@
                 }
             ],
             "stream": "http://localhost:8002/stream",
+            "streamVolume": 80,
             "admin": "http://localhost:8005",
             "atmosphere": [
                 {
-                    "name": "Cyberpunk Alley",
-                    "image": "assets/alley.gif",
+                    "name": "Cyberpunk Rooftop",
+                    "image": "assets/cyberpunk-rooftop.gif",
                     "audio": [
                         {
                             "link": "assets/songs/Rain-sound-loop.wav",
-                            "volume": 50,
+                            "volume": 33,
                             "loop": true
                         },
                         {
                             "link": "assets/songs/city_sounds.mp3",
-                            "volume": 50,
-                            "loop": true
-                        }
-                    ]
-                },
-                {
-                    "name": "Cyberpunk Alley (Silent)",
-                    "image": "assets/alley.gif"
-                }
-            ]
-        },
-        {
-            "id": "jungle",
-            "audioEffects": [
-                {
-                    "effectType": "lpf",
-                    "config": {
-                        "frequency": 15000
-                    }
-                }
-            ],
-            "stream": "http://localhost:8002/stream",
-            "admin": "http://localhost:8005",
-            "atmosphere": [
-                {
-                    "name": "Jungle Waterfall",
-                    "image": "assets/landscape.gif",
-                    "audio": [
-                        {
-                            "link": "assets/songs/waterfall.mp3",
-                            "volume": 50,
-                            "loop": true,
-                            "audioEffects": [
-                            ]
-                        },
-                        {
-                            "link": "assets/songs/nature.mp3",
-                            "volume": 50,
-                            "loop": true,
-                            "audioEffects": [
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "name": "Jungle Waterfall (Silent)",
-                    "image": "assets/landscape.gif"
-                }
-            ]
-        },
-        {
-            "id": "space",
-            "audioEffects": [
-                {
-                    "effectType": "hpf",
-                    "config": {
-                        "frequency": 500
-                    }
-                }
-            ],
-            "stream": "http://localhost:8002/stream",
-            "admin": "http://localhost:8005",
-            "atmosphere": [
-                {
-                    "name": "Space Mountain",
-                    "image": "assets/space.gif",
-                    "audio": [
-                        {
-                            "link": "assets/songs/Rain-sound-loop.wav",
-                            "volume": 75,
+                            "volume": 25,
                             "loop": true,
                             "audioEffects": [
                                 {
-                                    "effectType": "hpf",
+                                    "effectType": "reverb",
                                     "config": {
-                                        "frequency": 500
+                                        "time": 2.65,
+                                        "decay": 3,
+                                        "mix": 0.85
                                     }
                                 }
                             ]
@@ -116,8 +50,179 @@
                     ]
                 },
                 {
-                    "name": "Space Mountain (Silent)",
-                    "image": "assets/space.gif"
+                    "name": "Cyberpunk Rooftop (Silent)",
+                    "image": "assets/cyberpunk-rooftop.gif"
+                }
+            ]
+        },
+        {
+            "id": "cyberpunk-street",
+            "audioEffects": [
+                {
+                    "effectType": "hpf",
+                    "config": {
+                        "frequency": 200
+                    }
+                },
+                {
+                    "effectType": "reverb",
+                    "config": {
+                        "time": 1.63,
+                        "decay": 2,
+                        "mix": 0.5
+                    }
+                }
+            ],
+            "stream": "http://localhost:8002/stream",
+            "streamVolume": 80,
+            "admin": "http://localhost:8005",
+            "atmosphere": [
+                {
+                    "name": "Cyberpunk Street Bench",
+                    "image": "assets/cyberpunk-street-bench.gif",
+                    "audio": [
+                        {
+                            "link": "assets/songs/city_sounds.mp3",
+                            "volume": 33,
+                            "loop": true
+                        },
+                        {
+                            "link": "assets/songs/pedestrians.mp3",
+                            "volume": 33,
+                            "loop": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Cyberpunk Street Bench (Silent)",
+                    "image": "assets/cyberpunk-street-bench.gif"
+                }
+            ]
+        },
+        {
+            "id": "evening-parkinglot",
+            "audioEffects": [
+                {
+                    "effectType": "hpf",
+                    "config": {
+                        "frequency": 150
+                    }
+                },
+                {
+                    "effectType": "reverb",
+                    "config": {
+                        "time": 1.63,
+                        "decay": 2,
+                        "mix": 0.5
+                    }
+                }
+            ],
+            "stream": "http://localhost:8002/stream",
+            "streamVolume": 80,
+            "admin": "http://localhost:8005",
+            "atmosphere": [
+                {
+                    "name": "Dusk City",
+                    "image": "assets/evening-parkinglot.gif",
+                    "audio": [
+                        {
+                            "link": "assets/songs/quiet-street-noises.mp3",
+                            "volume": 100,
+                            "loop": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Dusk City (Silent)",
+                    "image": "assets/evening-parkinglot.gif"
+                }
+            ]
+        },
+        {
+            "id": "initiald",
+            "audioEffects": [
+                {
+                    "effectType": "lpf",
+                    "config": {
+                        "frequency": 300
+                    }
+                }
+            ],
+            "stream": "http://localhost:8002/stream",
+            "streamVolume": 40,
+            "admin": "http://localhost:8005",
+            "atmosphere": [
+                {
+                    "name": "Tofu Hero",
+                    "image": "assets/initiald.gif",
+                    "audio": [
+                        {
+                            "link": "assets/songs/quiet-street-noises.mp3",
+                            "volume": 100,
+                            "loop": true
+                        },
+                        {
+                            "link": "assets/songs/engine-idle.mp3",
+                            "volume": 30,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "lpf",
+                                    "config": {
+                                        "frequency": 2000
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Tofu Hero (Silent)",
+                    "image": "assets/initiald.gif"
+                }
+            ]
+        },
+        {
+            "id": "messy-bedroom",
+            "stream": "http://localhost:8002/stream",
+            "streamVolume": 30,
+            "admin": "http://localhost:8005",
+            "atmosphere": [
+                {
+                    "name": "Messy Bedroom",
+                    "image": "assets/messy-bedroom.gif",
+                    "audio": [
+                        {
+                            "link": "assets/songs/crickets.mp3",
+                            "volume": 100,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "lpf",
+                                    "config": {
+                                        "frequency": 2000
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "link": "assets/songs/Rain-sound-loop.wav",
+                            "volume": 33,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "lpf",
+                                    "config": {
+                                        "frequency": 800
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Messy Bedroom (Silent)",
+                    "image": "assets/messy-bedroom.gif"
                 }
             ]
         }

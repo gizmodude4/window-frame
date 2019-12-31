@@ -1,25 +1,40 @@
 body, html {
     height:100%;
     overflow: hidden;
+    background-color: black;
+    margin: 0;
 }
 
 img {
     image-rendering: crisp-edges;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 img.background {
     position: fixed; 
+    opacity: 0;
+    z-index: 2;
     top: -5; 
     left: -5;
-    
+
+    /* Center and scale the image nicely */
+    background-size: cover;
+
     /* Full height */
     height: 101%;
     width: 101%;
+}
 
-    /* Center and scale the image nicely */
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+img.loading {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 1;
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+    background-image: url("assets/loading.gif");
 }
 
 .display {

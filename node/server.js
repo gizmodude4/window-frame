@@ -40,6 +40,7 @@ isvalid(configFile, {
             'config': {type: Object, required: true, unknownKeys: 'allow'}
         }},
         'stream': {type: String, required: true},
+        'streamVolume': {type: Number, required: false},
         'admin': {type: String, required: true},
         'atmosphere': {type: Array, required: true, schema: {
             'name': {type: String, required: false},
