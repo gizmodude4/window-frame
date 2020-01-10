@@ -170,9 +170,11 @@ class WindowFrame {
             };
         } else {
             if (self.audioStream) {
-                self.audioStream.effects.forEach(effect => self.audioStream.removeEffect(effect));
+                self.audioStream = removeEffects(self.audioStream);
                 soundEffects.forEach(effect => self.audioStream.addEffect(effect));
-                self.audioStream.play();
+                if (!self.audioStream.playing) {
+                    self.audioStream.play();
+                }
                 self.audioStream.volume = streamVolume;
             }
             cb();
@@ -217,6 +219,13 @@ class WindowFrame {
         }
         this.processingEvent = false;
     }
+}
+
+function removeEffects(stream) {
+    while (stream.effects.length > 0) {
+        stream.removeEffect(stream.effects[0]);
+    }
+    return stream;
 }
 
 function getNextSceneInTime(scenes) {

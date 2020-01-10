@@ -41,6 +41,7 @@ img.loading {
     position: fixed;
     bottom: 15px;
     color: #DDD;
+    z-index: 3;
 }
 
 .info {
@@ -51,4 +52,5 @@ img.loading {
     background:rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     opacity: 0;
+    z-index: 3;
 }
