@@ -100,6 +100,71 @@
             ]
         },
         {
+            "id": "cyberpunk-cafe",
+            "audioEffects": [
+                {
+                    "effectType": "lpf",
+                    "config": {
+                        "frequency": 15000
+                    }
+                },
+                {
+                    "effectType": "reverb",
+                    "config": {
+                        "time": 1.63,
+                        "decay": 2,
+                        "mix": 0.5
+                    }
+                }
+            ],
+            "stream": "http://localhost:8002/stream",
+            "streamVolume": 50,
+            "admin": "http://localhost:8005",
+            "atmosphere": [
+                {
+                    "name": "Roast in the Shell",
+                    "image": "assets/cyberpunk-cafe.gif",
+                    "audio": [
+                        {
+                            "link": "assets/songs/city_sounds.mp3",
+                            "volume": 33,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "lpf",
+                                    "config": {
+                                        "frequency": 500
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "link": "assets/songs/pedestrians.mp3",
+                            "volume": 33,
+                            "loop": true,
+                            "audioEffects": [
+                                {
+                                    "effectType": "lpf",
+                                    "config": {
+                                        "frequency": 500
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "link": "assets/songs/cafe.mp3",
+                            "volume": 50,
+                            "loop": true
+                        }
+                    ]
+                },
+                {
+                    "name": "Roast in the Shell (Silent)",
+                    "image": "assets/cyberpunk-cafe.gif"
+                }
+            ]
+        },
+        {
             "id": "evening-parkinglot",
             "audioEffects": [
                 {
