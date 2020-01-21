@@ -3,7 +3,8 @@
 const Pizzicato = window.Pizzicato;
 
 class WindowFrame {
-    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, audioStreamTag, atmosphereAudioManager, socketMessager, displayMessage) {
+    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, audioStreamTag, atmosphereAudioManager, socketMessager, displayMessage, isChromium) {
+        this.isChromium = isChromium;
         this.type = type || 'playlist';
         this.audioStreamTag = audioStreamTag;
         this.audioStream = undefined;
@@ -166,6 +167,7 @@ class WindowFrame {
                 soundEffects.forEach(soundEffect => self.audioStream.addEffect(soundEffect));
                 self.audioStream.play();
                 self.audioStream.volume = streamVolume;
+                self.audioStreamTag.muted = self.isChromium;
                 cb();
             };
         } else {
@@ -176,6 +178,7 @@ class WindowFrame {
                     self.audioStream.play();
                 }
                 self.audioStream.volume = streamVolume;
+                self.audioStreamTag.muted = self.isChromium;
             }
             cb();
         }

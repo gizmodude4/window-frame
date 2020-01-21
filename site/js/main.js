@@ -12,6 +12,7 @@ var image = document.getElementById('background');
 var stream = document.getElementById('player');
 var sceneDisplay = document.getElementById('sceneDisplay');
 var songDisplay = document.getElementById('songDisplay');
+var isChromium = window.chrome ? true : false;
 
 var windowFrame;
 
@@ -19,7 +20,9 @@ function getScenesListener() {
     var returnConfig = JSON.parse(this.responseText)
     var scenes = parseScenes(returnConfig);
     var atmosphereAudioManager = new AudioManager(AudioEffectCreator);
-    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay, songDisplay, stream, atmosphereAudioManager, sendSocketMessage, displayMessage);
+    windowFrame = new WindowFrame(scenes, returnConfig['switchType'], image, sceneDisplay,
+                                  songDisplay, stream, atmosphereAudioManager, sendSocketMessage,
+                                  displayMessage, isChromium);
     windowFrame.showScene(scenes[0]);
 }
 
