@@ -1,0 +1,14 @@
+[Unit]
+Description=Liquidsoap Server
+After=windowframe.service
+
+[Service]
+User=pi
+ExecStart=/usr/bin/liquidsoap /home/pi/window-frame/liquidsoapconfig.liq
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

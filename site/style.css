@@ -1,8 +1,19 @@
 body, html {
-    height:100%;
     overflow: hidden;
+    margin:0;
+}
+
+.body {
+    height:110%;
+    width:110%;
     background-color: black;
-    margin: 0;
+    background-size:cover;
+    -webkit-background-size:cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    position:fixed;
+    top: -5;
+    left: -5;
 }
 
 img {

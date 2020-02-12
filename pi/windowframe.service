@@ -1,0 +1,14 @@
+[Unit]
+Description=Window Frame Server
+After=windowdisplay.service
+
+[Service]
+User=pi
+ExecStart=/usr/bin/node /home/pi/window-frame/node/server.js --config /home/pi/window-frame/node/playlist.json
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
