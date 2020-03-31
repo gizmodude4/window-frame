@@ -21,6 +21,7 @@ class WindowFrame {
         this.socketMessager = socketMessager;
         this.displayMessage = displayMessage;
         this.fadeDuration = 2000;
+        this.streamCheck = null;
     }
 
     playNextSong(cb) {
@@ -182,6 +183,15 @@ class WindowFrame {
             }
             cb();
         }
+        if (self.streamCheck) {
+            clearInterval(self.streamCheck);
+        }
+        self.streamCheck = setInterval(() => {
+            if (!self.audioStream.playing) {
+                console.error("stream not playing. going to try playing.")
+                self.audioStream.play();
+            }
+        }, 10000);
     }
 
     playAtmosphere(atmosphere, volumeOverride, cb) {
