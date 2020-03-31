@@ -13,6 +13,26 @@ var stream = document.getElementById('player');
 var sceneDisplay = document.getElementById('sceneDisplay');
 var songDisplay = document.getElementById('songDisplay');
 var isChromium = window.chrome ? true : false;
+var streamError = 0;
+var currTime = -1;
+
+stream.addEventListener('error', () => {
+    streamError++;
+    console.error('Audio stream error, reloading...');
+    if (streamError < 5) {
+        stream.load();
+    }
+});
+
+setInterval(() => {
+    var newTime = stream.currentTime;
+    if (currTime == -1) {
+        currTime = newTime;
+    } else if (currTime == newTime) {
+        console.error('Audio stream not plaing, reloading...');
+        stream.load();
+    }
+}, 10000);
 
 var windowFrame;
 

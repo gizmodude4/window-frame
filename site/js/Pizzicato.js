@@ -20,7 +20,7 @@
 		return;
 	}
 
-	Pizzicato.context = new AudioContext();
+	Pizzicato.context = new AudioContext({latencyHint: 'playback'});
 
 	var masterGainNode = Pizzicato.context.createGain();
 	masterGainNode.connect(Pizzicato.context.destination);
