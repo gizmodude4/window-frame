@@ -12,6 +12,9 @@ var image = document.getElementById('background');
 var stream = document.getElementById('player');
 var sceneDisplay = document.getElementById('sceneDisplay');
 var songDisplay = document.getElementById('songDisplay');
+var lastKeyPressed;
+var lastKeyPressedTime;
+var longPressTime = 3000;
 var isChromium = window.chrome ? true : false;
 var streamError = 0;
 var currTime = -1;
@@ -88,6 +91,10 @@ function receiveMetadata(metadata) {
 }
 
 function handleAction(event) {
+    if (lastKeyPressed != event.key) {
+        lastKeyPressed = event.key;
+        lastKeyPressedTime = Date.now();
+    }
     var action = undefined;
     if (event.key) {
         action = keyToAction(event.key);
@@ -160,4 +167,11 @@ function keyToAction(key) {
     }
 }
 
-document.addEventListener('keypress', handleAction);
+function checkIfLongPress(event) {
+    if (lastKeyPressed == event.key && (Date.now() - lastKeyPressedTime) > longPressTime) {
+        location.reload(true)
+    }
+}
+
+document.addEventListener('keydown', handleAction);
+document.addEventListener('keyup', checkIfLongPress);

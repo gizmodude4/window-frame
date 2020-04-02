@@ -186,12 +186,6 @@ class WindowFrame {
         if (self.streamCheck) {
             clearInterval(self.streamCheck);
         }
-        self.streamCheck = setInterval(() => {
-            if (!self.audioStream.playing) {
-                console.error("stream not playing. going to try playing.")
-                self.audioStream.play();
-            }
-        }, 10000);
     }
 
     playAtmosphere(atmosphere, volumeOverride, cb) {
