@@ -43,6 +43,7 @@ isvalid(configFile, {
         'streamVolume': {type: Number, required: false},
         'admin': {type: String, required: true},
         'atmosphere': {type: Array, required: true, schema: {
+            'streamVolume': {type: Number, required: false},
             'name': {type: String, required: false},
             'image': {type: String, required: true},
             'audio': {type: Array, required: false, schema: {

@@ -45,7 +45,8 @@ class WindowFrame {
             self.socketMessager(scene.getId());
             self.displayTag.style.backgroundImage = 'url(' + atmosphere.getImage() + ')';
             self.playAtmosphere(atmosphere, true, function() {
-                self.fadeSceneIn(scene.getStreamVolume()/100, atmosphere, cb);
+                var volume = atmosphere.getStreamVolume() || scene.getStreamVolume();
+                self.fadeSceneIn(volume/100, atmosphere, cb);
             });
         });
     }
@@ -86,7 +87,8 @@ class WindowFrame {
             self.displayTag.style.backgroundImage = 'url(' + scene.getAtmosphere(0).getImage() + ')';
             self.playStream(scene.getStream(), 0, scene.getSongSoundEffects(), function() {
                 self.playAtmosphere(scene.getAtmosphere(0), true, function() {
-                    self.fadeSceneIn(scene.getStreamVolume()/100, scene.getAtmosphere(0), cb);
+                    var volume = scene.getAtmosphere(0).getStreamVolume() || scene.getStreamVolume();
+                    self.fadeSceneIn(volume/100, scene.getAtmosphere(0), cb);
                 });
             });
         });

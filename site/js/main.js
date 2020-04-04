@@ -61,7 +61,7 @@ function parseScenes(sceneConfigs) {
                     atmosphereAudio.push(toSceneAudio(audioConfig));
                 })
             }
-            atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereConfig['name'], atmosphereAudio))
+            atmosphere.push(new Atmosphere(atmosphereConfig['image'], atmosphereConfig['name'], atmosphereConfig['streamVolume'], atmosphereAudio))
         });
         scenes.push(new Scene(sceneConfig['id'], sceneConfig['stream'], sceneConfig['streamVolume'], songAudioEffects, atmosphere, sceneConfig['endTime']));
     });
@@ -168,8 +168,15 @@ function keyToAction(key) {
 }
 
 function checkIfLongPress(event) {
+    var reload = false;
     if (lastKeyPressed == event.key && (Date.now() - lastKeyPressedTime) > longPressTime) {
-        location.reload(true)
+        reload = true;
+    }
+
+    lastKeyPressedTime = null;
+    lastKeyPressed = null;
+    if (reload) {
+        location.reload(true);
     }
 }
 

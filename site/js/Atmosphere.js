@@ -1,9 +1,10 @@
 'use strict';
 
 class Atmosphere {
-    constructor(image, name, audio) {
+    constructor(image, name, streamVolume, audio) {
       this.image = image;
       this.name = name;
+      this.streamVolume = streamVolume || null;
       this.audio = audio || [];
     }
 
@@ -13,6 +14,10 @@ class Atmosphere {
 
     getImage() {
         return this.image;
+    }
+
+    getStreamVolume() {
+        return this.streamVolume;
     }
 
     getAudio() {
