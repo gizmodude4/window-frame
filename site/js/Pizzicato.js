@@ -20,7 +20,7 @@
 		return;
 	}
 
-	Pizzicato.context = new AudioContext();
+	Pizzicato.context = new AudioContext({latencyHint: 'playback'});
 
 	var masterGainNode = Pizzicato.context.createGain();
 	masterGainNode.connect(Pizzicato.context.destination);
@@ -380,21 +380,24 @@
 				navigator.mediaDevices.getUserMedia({ audio: true }).then(handleStream).catch(handleError);
 			else
 				navigator.getUserMedia({ audio: true }, handleStream, handleError);
-        }
-        
-        function initializeWithAudioElement(options, callback) {
-            console.log('called with initialize audio element');
-            this.getRawSourceNode = function() {
-                return Pizzicato.context.createMediaStreamSource(options.audioElement.mozCaptureStream());
-            };
-            this.sourceNode = this.getRawSourceNode();
-            this.sourceNode.gainSuccessor = Pz.context.createGain();
-			this.sourceNode.connect(this.sourceNode.gainSuccessor);
-            if (util.isFunction(callback))
-                callback();
 		}
-	
-	
+
+		function initializeWithAudioElement(options, callback) {
+			this.getRawSourceNode = function() {
+				if (options.audioElement.mozCaptureStream) {
+					return Pizzicato.context.createMediaStreamSource(options.audioElement.mozCaptureStream());
+				} else {
+					return Pizzicato.context.createMediaStreamSource(options.audioElement.captureStream());
+				}
+			};
+			this.sourceNode = this.getRawSourceNode();
+			this.sourceNode.gainSuccessor = Pz.context.createGain();
+			this.sourceNode.connect(this.sourceNode.gainSuccessor);
+			if (util.isFunction(callback))
+				callback();
+		}
+
+
 		function initializeWithFunction(options, callback) {
 			var audioFunction = util.isFunction(options) ? options : options.audioFunction;
 			var bufferSize = util.isObject(options) && options.bufferSize ? options.bufferSize : null;

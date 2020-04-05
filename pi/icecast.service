@@ -1,0 +1,14 @@
+[Unit]
+Description=Icecast Server
+After=liquidsoap.service
+
+[Service]
+User=pi
+ExecStart=/usr/bin/icecast2 -c /home/pi/window-frame/icecast.xml
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

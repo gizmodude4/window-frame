@@ -1,43 +1,54 @@
+'use strict';
+
 const Pizzicato = window.Pizzicato;
 
 class WindowFrame {
-    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, songAudioManager, atmosphereAudioManager) {
+    constructor(scenes, type, displayTag, sceneDisplay, songDisplay, audioStreamTag, atmosphereAudioManager, socketMessager, displayMessage, isChromium) {
+        this.isChromium = isChromium;
         this.type = type || 'playlist';
-        this.songAudioManager = songAudioManager;
+        this.audioStreamTag = audioStreamTag;
+        this.audioStream = undefined;
         this.atmosphereAudioManager = atmosphereAudioManager;
         this.displayTag = displayTag;
         this.sceneDisplay = sceneDisplay;
         this.songDisplay = songDisplay;
         this.scenes = scenes;
         this.sceneIndex = 0;
-        this.songIndex = 0;
         this.atmosphereIndex = 0;
         this.nextSceneTimeout = undefined;
         this.processingEvent = false;
         this.processingEventWatchdog = undefined;
+        this.socketMessager = socketMessager;
+        this.displayMessage = displayMessage;
+        this.fadeDuration = 2000;
+        this.streamCheck = null;
     }
 
     playNextSong(cb) {
-        this.switchingAudio = true;
-        var scene = this.scenes[this.sceneIndex];
-        this.songIndex++;
-        if (this.songIndex >= scene.getSongsCount()) {
-            this.songIndex = 0;
-        }
-        displayMessage(this.songDisplay, getSongTitle(scene.getSong(this.songIndex).getLink()));
-        this.playSong(scene.getSong(this.songIndex), scene.getSongSoundEffects(), cb);
-        this.switchingAudio = false;
+        var oReq = new XMLHttpRequest();
+        oReq.addEventListener('load', cb);
+        oReq.open('PUT', 'http://localhost:8080/scenes/' + this.scenes[this.sceneIndex].id  + '/skip');
+        oReq.send();
     }
 
     playNextAtmosphere(cb) {
         var scene = this.scenes[this.sceneIndex];
         this.atmosphereIndex++;
+        var self = this;
         if (this.atmosphereIndex >= scene.getAtmosphereCount()) {
             this.atmosphereIndex = 0;
         }
-        displayMessage(this.sceneDisplay, scene.getAtmosphere(this.atmosphereIndex).getName());
-        this.showImage(scene.getAtmosphere(this.atmosphereIndex).getImage());
-        this.playAtmosphere(scene.getAtmosphere(this.atmosphereIndex), cb);
+        var atmosphere = scene.getAtmosphere(self.atmosphereIndex);
+        this.fadeSceneOut(atmosphere, function() {
+            self.atmosphereAudioManager.stopAllPlayingAudio();
+            self.displayMessage(self.sceneDisplay, atmosphere.getName());
+            self.socketMessager(scene.getId());
+            self.displayTag.style.backgroundImage = 'url(' + atmosphere.getImage() + ')';
+            self.playAtmosphere(atmosphere, true, function() {
+                var volume = atmosphere.getStreamVolume() || scene.getStreamVolume();
+                self.fadeSceneIn(volume/100, atmosphere, cb);
+            });
+        });
     }
 
     showNextScene(cb) {
@@ -55,6 +66,7 @@ class WindowFrame {
     }
 
     showScene(scene, cb) {
+        var self = this;
         if (scene.getEndTime()) {
             var self = this;
             self.nextSceneTimeout = setTimeout(() => {
@@ -67,37 +79,124 @@ class WindowFrame {
                 }, 1000);
             }, getTimeUntil(scene.getEndTime()));
         }
-        this.songIndex = 0;
-        this.atmosphereIndex = 0;
-        this.switchingAudio = true;
-        this.switchingAtmosphere = true;
-        displayMessage(this.sceneDisplay, scene.getAtmosphere(0).getName());
-        displayMessage(this.songDisplay, getSongTitle(scene.getSong(0).getLink()));
-        this.showImage(scene.getAtmosphere(0).getImage());
-        this.playSong(scene.getSong(0), scene.getSongSoundEffects(), () => {
-            this.playAtmosphere(scene.getAtmosphere(0), cb); 
+        this.fadeSceneOut(scene.getAtmosphere(self.atmosphereIndex), function() {
+            self.atmosphereIndex = 0;
+            self.atmosphereAudioManager.stopAllPlayingAudio();
+            self.displayMessage(self.sceneDisplay, scene.getAtmosphere(0).getName());
+            self.socketMessager(scene.getId());
+            self.displayTag.style.backgroundImage = 'url(' + scene.getAtmosphere(0).getImage() + ')';
+            self.playStream(scene.getStream(), 0, scene.getSongSoundEffects(), function() {
+                self.playAtmosphere(scene.getAtmosphere(0), true, function() {
+                    var volume = scene.getAtmosphere(0).getStreamVolume() || scene.getStreamVolume();
+                    self.fadeSceneIn(volume/100, scene.getAtmosphere(0), cb);
+                });
+            });
         });
-        this.switchingAudio = false;
     }
 
-    showImage(image) {
-        this.displayTag.style.backgroundImage = 'url(' + image + ')';
+    fadeSceneOut(atmosphere, cb) {
+        var self = this;
+        var curOpacity = parseFloat(self.displayTag.style.opacity);
+        var opacity = curOpacity ? curOpacity : 1;
+        var curVolume = self.audioStream ? self.audioStream.volume : 1;
+        var fadeStep = 100/self.fadeDuration;
+        var imageFadeOut = setInterval(function() {
+            opacity -= fadeStep;
+            if (opacity <= curVolume && curVolume > 0) {
+                curVolume -= fadeStep;
+                curVolume = curVolume < 0 ? 0 : curVolume;
+            }
+            if (self.audioStream && self.audioStream.volume > curVolume) {
+                self.audioStream.volume = curVolume;
+            }
+            atmosphere.getAudio().forEach(audio => {
+                if (audio.getVolume()/100 >= curVolume) {
+                    self.atmosphereAudioManager.setCurrentlyPlayingVolume(audio.getLink(), curVolume);
+                }
+            });
+            self.displayTag.style.opacity = opacity;
+            if (opacity <= 0) {
+                clearInterval(imageFadeOut);
+                cb();
+            }
+        }, self.fadeDuration/100);
     }
 
-    playSong(song, soundEffects, cb) {
-        this.songAudioManager.stopAllPlayingAudio();
-        this.songAudioManager.playAudio(song, soundEffects, () => {
-            this.playNextSong();
-        }, cb);
+    fadeSceneIn(streamVolume, atmosphere, cb) {
+        var self = this;
+        var curOpacity = parseFloat(self.displayTag.style.opacity);
+        var opacity = curOpacity ? curOpacity : 0;
+        var curVolume = self.audioStream ? self.audioStream.volume : 0;
+        var fadeStep = 100/self.fadeDuration;
+        var imageFadeIn = setInterval(function() {
+            opacity += fadeStep;
+            if (opacity >= curVolume) {
+                curVolume += fadeStep;
+                curVolume = curVolume > 1 ? 1 : curVolume;
+            }
+            atmosphere.getAudio().forEach(audio => {
+                if (audio.getVolume()/100 >= curVolume) {
+                    self.atmosphereAudioManager.setCurrentlyPlayingVolume(audio.getLink(), curVolume);
+                }
+            });
+            if (self.audioStream && streamVolume >= curVolume) {
+                self.audioStream.volume = curVolume;
+            }
+            self.displayTag.style.opacity = opacity;
+            if (opacity >= 1) {
+                clearInterval(imageFadeIn);
+                if (cb) {
+                    cb();
+                }
+            }
+        }, self.fadeDuration/100);
     }
 
-    playAtmosphere(atmosphere, cb) {
+    playStream(streamLink, streamVolume, soundEffects, cb) {
+        var self = this;
+        if (self.audioStreamTag.src != streamLink) {
+            if (self.audioStream) {
+                self.audioStream.disconnect();
+                self.audioStream = null;
+            }
+            self.audioStreamTag.src = streamLink;
+            self.audioStreamTag.oncanplaythrough = function() {
+                self.audioStream = new Pizzicato.Sound({
+                    'source': 'audioElement',
+                    'options': {
+                        'audioElement': self.audioStreamTag
+                    }
+                });
+                soundEffects.forEach(soundEffect => self.audioStream.addEffect(soundEffect));
+                self.audioStream.play();
+                self.audioStream.volume = streamVolume;
+                self.audioStreamTag.muted = self.isChromium;
+                cb();
+            };
+        } else {
+            if (self.audioStream) {
+                self.audioStream = removeEffects(self.audioStream);
+                soundEffects.forEach(effect => self.audioStream.addEffect(effect));
+                if (!self.audioStream.playing) {
+                    self.audioStream.play();
+                }
+                self.audioStream.volume = streamVolume;
+                self.audioStreamTag.muted = self.isChromium;
+            }
+            cb();
+        }
+        if (self.streamCheck) {
+            clearInterval(self.streamCheck);
+        }
+    }
+
+    playAtmosphere(atmosphere, volumeOverride, cb) {
         this.atmosphereAudioManager.stopAllPlayingAudio();
         var promises = [];
         var self = this;
         atmosphere.getAudio().forEach(audio => {
             promises.push(new Promise((resolve) => {
-                self.atmosphereAudioManager.playAudio(audio, [], null, resolve);
+                self.atmosphereAudioManager.playAudio(audio, [], volumeOverride, null, resolve);
             }));
         });
         if (promises.length > 0) {
@@ -131,6 +230,13 @@ class WindowFrame {
     }
 }
 
+function removeEffects(stream) {
+    while (stream.effects.length > 0) {
+        stream.removeEffect(stream.effects[0]);
+    }
+    return stream;
+}
+
 function getNextSceneInTime(scenes) {
     var nextTimeUntil = -1;
     var nextScene = undefined;
@@ -155,27 +261,6 @@ function getTimeUntil(time) {
         setTime.setTime(setTime.getTime() + 24*60*60*1000);
     }
     return setTime.getTime() - now.getTime();
-}
-
-function displayMessage(tag, text) {
-    if (text) {
-        tag.textContent = text;
-        tag.style.opacity = 1;
-        setTimeout(() => {
-            var fadeOut = setInterval(() => {
-                tag.style.opacity = tag.style.opacity - 0.01;
-                if (tag.style.opacity <= 0) {
-                    clearInterval(fadeOut);
-                }
-            }, 10);
-        }, 5000);
-    }
-}
-
-function getSongTitle(path) {
-    var split = path.split("/");
-    var last = split[split.length-1];
-    return last.substring(0, last.lastIndexOf('.'));
 }
 
 export default WindowFrame;

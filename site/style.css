@@ -1,25 +1,49 @@
 body, html {
-    height:100%;
     overflow: hidden;
+    margin:0;
+}
+
+.body {
+    height:110%;
+    width:110%;
+    background-color: black;
+    background-size:cover;
+    -webkit-background-size:cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    position:fixed;
+    top: -5;
+    left: -5;
 }
 
 img {
     image-rendering: crisp-edges;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    /* Full height */
+    height: 101%;
+    width: 101%;
 }
 
 img.background {
     position: fixed; 
+    opacity: 0;
+    z-index: 2;
     top: -5; 
     left: -5;
-    
-    /* Full height */
-    height: 101%;
-    width: 101%;
 
     /* Center and scale the image nicely */
-    background-position: center;
-    background-repeat: no-repeat;
     background-size: cover;
+}
+
+img.loading {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 1;
+    z-index: 1;
+    background-image: url("assets/loading.gif");
 }
 
 .display {
@@ -28,6 +52,7 @@ img.background {
     position: fixed;
     bottom: 15px;
     color: #DDD;
+    z-index: 3;
 }
 
 .info {
@@ -37,4 +62,6 @@ img.background {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     background:rgba(0, 0, 0, 0.5);
     border-radius: 10px;
+    opacity: 0;
+    z-index: 3;
 }
