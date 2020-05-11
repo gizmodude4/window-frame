@@ -1,5 +1,8 @@
-# py-window-frame
+# window-frame
 Digital Window Frame software for Raspberry Pi
+
+# Demo
+I did a YouTube video showing off what this can do here: https://www.youtube.com/watch?v=3YfQFlvKxRY
 
 ## Current Windows Installation
 - Install `windows-service.js` using `node-windows`, an npm downloadable library to run the Node.JS server on startup
