@@ -1,0 +1,141 @@
+body, html {
+    overflow: hidden;
+    margin:0;
+}
+
+#body {
+    height:110%;
+    width:110%;
+    background-color: black;
+    background-size:cover;
+    -webkit-background-size:cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    position:fixed;
+    top: -5;
+    left: -5;
+}
+
+img {
+    image-rendering: crisp-edges;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    /* Full height */
+    height: 101%;
+    width: 101%;
+}
+
+img.background {
+    position: fixed; 
+    opacity: 0;
+    z-index: 2;
+    top: -5; 
+    left: -5;
+
+    /* Center and scale the image nicely */
+    background-size: cover;
+}
+
+img.loading {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    opacity: 1;
+    z-index: 1;
+    background-image: url("assets/loading.gif");
+}
+
+.display {
+    display: block;
+    float: left;
+    position: fixed;
+    bottom: 15px;
+    color: #DDD;
+    z-index: 3;
+}
+
+.info {
+    margin: 5px 20px 5px 20px;
+    padding: 5px 20px 5px 20px;
+    font-size: 30px;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    background:rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    opacity: 0;
+    z-index: 3;
+}
+
+.slidecontainer {
+  width: 100%; /* Width of the outside container */
+  position: fixed;
+  z-index: 5;
+}
+
+/* The slider itself */
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+#time {
+  display: block;
+  float: left;
+  position: fixed;
+  bottom: 15px;
+  color: #DDD;
+  margin: 5px 20px 5px 20px;
+  padding: 5px 20px 5px 20px;
+  font-size: 30px;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  background:rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  z-index: 3;
+  opacity: 0;
+}
+
+.loading-screen.hide-opacity{
+  opacity: 0;
+}
+
+.loading-screen {
+  pointer-events: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 10;
+  background-image: url("../assets/loading.gif");
+  background-color:black;
+  transition: opacity 3s ease-in-out;
+  opacity: 1;
+  position: fixed;
+}
