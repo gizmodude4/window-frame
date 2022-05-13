@@ -1,0 +1,81 @@
+{
+  "collections": [
+    {
+      "collectionType": "STATIC",
+      "scenes": [
+        {
+          "id": "peaceful-valley",
+          "name": "Peaceful Valley",
+          "image": "assets/peaceful-valley.png",
+          "horizonY": 0.25,
+          "animations": [
+            {
+              "spawnChance": 0.10,
+              "backgroundChance": 0.5,
+              "image": "assets/cloud-1.png",
+              "sizeMod": 0.9,
+              "movement": {
+                "duration": 90,
+                "direction": "RIGHT"
+              }
+            },
+            {
+              "spawnChance": 0.10,
+              "backgroundChance": 0.5,
+              "image": "assets/cloud-1.png",
+              "sizeMod": 0.9,
+              "movement": {
+                "duration": 120,
+                "direction": "RIGHT"
+              }
+            },
+            {
+              "spawnChance": 0.10,
+              "backgroundChance": 0.9,
+              "image": "assets/cloud-3.png",
+              "sizeMod": 0.5,
+              "movement": {
+                "duration": 90,
+                "direction": "RIGHT"
+              }
+            }
+          ],
+          "stream": {
+            "url": "http://usa9.fastcast4u.com/proxy/jamz?mp=/1",
+            "volume": 30,
+            "effects": [
+              {
+                "effectType": "hpf",
+                "config": {
+                  "frequency": 100
+                }
+              }
+            ]
+          },
+          "sounds": [
+            {
+              "url": "assets/songs/valley.wav",
+              "volume": 50,
+              "loop": true
+            },
+            {
+              "url": "assets/songs/quiet-street-noises.mp3",
+              "volume": 20,
+              "loop": true,
+              "effects": [
+                {
+                  "effectType": "reverb",
+                  "config": {
+                    "time": 2.65,
+                    "decay": 3,
+                    "mix": 0.85
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
