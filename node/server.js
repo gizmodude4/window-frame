@@ -55,8 +55,8 @@ const app = express();
 app.use(cors(corsOptions));
 let server;
 if (DEPLOYED) {
-  const privateKey = fs.readFileSync('/etc/letsencrypt/live/twitchbotapi.codingvibe.dev/privkey.pem');
-  const certificate = fs.readFileSync('/etc/letsencrypt/live/twitchbotapi.codingvibe.dev/fullchain.pem');
+  const privateKey = fs.readFileSync('/etc/letsencrypt/live/backend.lazyday.cafe/fullchain.pem');
+  const certificate = fs.readFileSync('/etc/letsencrypt/live/backend.lazyday.cafe/fullchain.pem');
 
   const credentials = { key: privateKey, cert: certificate };
   server = https.createServer(credentials, app);
