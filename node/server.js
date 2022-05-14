@@ -55,7 +55,7 @@ const app = express();
 app.use(cors(corsOptions));
 let server;
 if (DEPLOYED) {
-  const privateKey = fs.readFileSync('/etc/letsencrypt/live/backend.lazyday.cafe/fullchain.pem');
+  const privateKey = fs.readFileSync('/etc/letsencrypt/live/backend.lazyday.cafe/privkey.pem');
   const certificate = fs.readFileSync('/etc/letsencrypt/live/backend.lazyday.cafe/fullchain.pem');
 
   const credentials = { key: privateKey, cert: certificate };

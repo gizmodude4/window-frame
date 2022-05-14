@@ -92,6 +92,9 @@ let backgroundShader;
 
 /*
 TODO:
+- doubled up audio?
+- autoplaying
+
 - light shaders
 - random animations
 */
