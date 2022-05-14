@@ -36,7 +36,7 @@ const APP_PORT = 8080;
 const DEPLOYED = process.env.DEPLOYED;
 
 /////////////////////////// Set Up Server ///////////////////////////
-const whitelist = ['https://twitchoverlay.codingvibe.dev']
+const whitelist = ['https://lazyday.cafe']
 if (!DEPLOYED) {
   whitelist.push('http://localhost:8000');
 }
