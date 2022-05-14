@@ -18,6 +18,16 @@ export async function getCollections() {
     return []
 }
 
+export async function getLatLon() {
+    try {
+        let resp = fetch(`${backendServerUrl}/location`)
+        return (await resp).json()
+    } catch (e) {
+        console.error("Couldn't fetch scenes", e);
+    }
+    return null;
+}
+
 export function sendSocketMessage(message) {
     var retry = setInterval(function() {
         if (socket.readyState == WebSocket.OPEN) {

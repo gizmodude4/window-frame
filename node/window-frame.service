@@ -1,0 +1,10 @@
+[Unit]
+Description=Backend for the Digital Window Frame
+
+[Service]
+WorkingDirectory=/root/window-frame/node/
+ExecStart=node server.js --config v2-playlist.json
+Restart=true
+
+[Install]
+WantedBy=multi-user.target

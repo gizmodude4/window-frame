@@ -155,6 +155,25 @@ function setUpServer(config) {
     res.send(config.collections);
   });
 
+  app.get('/location', function(req, res) {
+    const fullIp = req.headers['x-forwarded-for'] ||
+                req.socket.remoteAddress ||
+                null;
+    const ipv4 = fullIp.replace(/^.*:/, '');
+    console.log(fullIp);
+    console.log(ipv4);
+    if (!ipv4) {
+      res.send(null)
+      return;
+    }
+    axios.get(`https://ipapi.co/${ipv4}/json/`).then((response) => {
+      res.send({
+        "lat": response.data.latitude,
+        "lon": response.data.longitude,
+      });
+    });
+  })
+
   app.put('/scenes/:sceneId/skip', async function (req, res) {
     var sceneId = req.params.sceneId;
     var foundSeen = undefined;
@@ -266,6 +285,7 @@ function generateTicket(origin) {
 }
 
 function validateTicket(url, origin) {
+  console.log (`url: ${url}, origin: ${origin}`)
   const index = url.indexOf('ticket=');
   const submittedTicket = url.substring(index + 7);
   let foundTicket;
@@ -285,9 +305,9 @@ function validateTicket(url, origin) {
 }
 
 const ticketCleanup = setInterval(() => {
-  const expiredTickets = []
+  const expiredTickets = [];
   Object.keys(activeTickets).forEach(ticket => {
-    if (activeTickets[ticket].expiration > Date.now()) {
+    if (activeTickets[ticket].expiration < Date.now()) {
       expiredTickets.push(ticket);
     }
   })

@@ -1,7 +1,6 @@
 import { getSunInfo } from './getSunInfo.js';
 import { processSkySprites, addSkySprite, resetSkySprites, resizeSkySprites } from './skySprites.js';
 import { getShaderInfo } from './shaderUtils.js';
-import { getPosition } from './getPosition.js';
 import {
     initializeAudio,
     playStream,
@@ -12,7 +11,7 @@ import {
     reenableEffects } from './audioManager.js';
 import { initializeScenes } from './sceneManager.js'
 import { getConfigProperty, updateConfig } from './config.js';
-import { initializeBackend, getCollections, sendSocketMessage } from './backendApiManager.js';
+import { initializeBackend, getCollections, getLatLon, sendSocketMessage } from './backendApiManager.js';
 
 const foregroundDayNightShaderRaw = document.getElementById("foregroundDayNightShader").innerHTML;
 const skyDayNightShaderRaw = document.getElementById("skyDayNightShader").innerHTML;
@@ -36,17 +35,17 @@ if (location.origin === 'https://lazyday.cafe') {
     backendServerWebsocket = 'wss://backend.lazyday.cafe';
 }
 
-let now = new Date();
-let shaderOverride = getTime()
-
-const pos = await getPosition();
-let sunInfo = getSunInfo(now, pos);
-let horizonY = 0.5;
-
 initializeAudio(stream);
 await initializeBackend(backendServerUrl, backendServerWebsocket, (metadata) => {
     artistMetadata.innerText = metadata.data
 });
+
+let now = new Date();
+let shaderOverride = getTime()
+
+const pos = await getLatLon();
+let sunInfo = getSunInfo(now, pos);
+let horizonY = 0.5;
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 PIXI.settings.SORTABLE_CHILDREN = true;
