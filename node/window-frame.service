@@ -1,5 +1,5 @@
 [Unit]
-Description=Backend for the Digital Window Frame
+Description=Backend for Lazy Day Cafe
 
 [Service]
 WorkingDirectory=/root/window-frame/node/

@@ -9,6 +9,8 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.16.4",
+    "geo-tz": "^7.0.2",
+    "geoip-lite": "^1.4.5",
     "icecast-parser": "^3.2.1",
     "isvalid": "^2.10.4",
     "minimist": "^1.2.0",

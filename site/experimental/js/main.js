@@ -11,7 +11,7 @@ import {
     reenableEffects } from './audioManager.js';
 import { initializeScenes } from './sceneManager.js'
 import { getConfigProperty, updateConfig } from './config.js';
-import { initializeBackend, getCollections, getLatLon, sendSocketMessage } from './backendApiManager.js';
+import { initializeBackend, getCollections, getGeoData, sendSocketMessage } from './backendApiManager.js';
 
 const foregroundDayNightShaderRaw = document.getElementById("foregroundDayNightShader").innerHTML;
 const skyDayNightShaderRaw = document.getElementById("skyDayNightShader").innerHTML;
@@ -35,15 +35,15 @@ if (location.origin === 'https://lazyday.cafe') {
     backendServerWebsocket = 'wss://backend.lazyday.cafe';
 }
 
-initializeAudio(stream);
+initializeAudio(stream, isChromium);
 await initializeBackend(backendServerUrl, backendServerWebsocket, (metadata) => {
     artistMetadata.innerText = metadata.data
 });
 
-let now = new Date();
-let shaderOverride = getTime()
+let now = luxon.DateTime.now();
+let shaderOverride = getTime();
 
-const pos = await getLatLon();
+const pos = await getGeoData();
 let sunInfo = getSunInfo(now, pos);
 let horizonY = 0.5;
 
@@ -92,14 +92,20 @@ let backgroundShader;
 
 /*
 TODO:
-- doubled up audio?
-- autoplaying
+- CORS on the site
 
 - light shaders
 - random animations
 */
 
 // UI elements
+var modal = document.getElementById("consent-modal");
+var btn = document.getElementById("consent-button");
+btn.onclick = () => {
+    modal.style.display = "none";
+    playSceneAudio();
+} 
+
 const musicIcon = document.querySelector("#music-icon");
 const ambianceIcon = document.querySelector("#ambiance-icon");
 const sideBar = document.querySelector('.side-bar');
@@ -129,6 +135,7 @@ function hideOnClickOutside(element) {
 }
 
 const timeOfDaySlider = document.getElementById("day-slider");
+const timeOfDaySliderContainer = document.querySelector(".time-of-day-slider-container");
 const timeOfDayTooltip = document.getElementById("time-of-day-tooltip");
 
 timeOfDaySlider.oninput = () => {
@@ -141,7 +148,7 @@ timeOfDaySlider.oninput = () => {
         timeOfDayTooltip.style.removeProperty("right");
         timeOfDayTooltip.style.left = `${percent*100}%`;
     }
-    timeOfDayTooltip.innerHTML = shaderOverride.toLocaleTimeString();
+    timeOfDayTooltip.innerHTML = shaderOverride.toLocaleString(luxon.DateTime.TIME_WITH_SECONDS);
     updateShaderInfo(shaderOverride);
 }
 
@@ -149,6 +156,7 @@ const timeOfDayButton = document.querySelector("#time-of-day");
 const timeOfDayCheckbox = document.querySelector("#time-of-day-checkbox");
 const timeOfDayIcon = document.querySelector("#time-of-day-icon");
 timeOfDayCheckbox.checked = getConfigProperty("dynamicTimeOfDay");
+toggleTimeOfDay(timeOfDayCheckbox.checked);
 timeOfDayButton.onclick = (event) => {
     // This is to avoid double processing onclick, which happens
     // because the span and checkbox are on top of each other.
@@ -168,10 +176,10 @@ timeOfDayButton.onclick = (event) => {
 function toggleTimeOfDay(timeOfDayOn) {
     if (timeOfDayOn) {
         timeOfDaySlider.disabled = true;
-        timeOfDaySlider.classList.toggle("hidden")
+        timeOfDaySliderContainer.classList.add("hidden")
     } else {
         timeOfDaySlider.disabled = false;
-        timeOfDaySlider.classList.toggle("hidden")
+        timeOfDaySliderContainer.classList.remove("hidden")
     }
 }
 
@@ -199,6 +207,7 @@ audioFiltersButton.onclick = (event) => {
 const nextButton = document.querySelector("#next");
 nextButton.onclick = () => {
     loadNextScene();
+    //playSceneAudio();
 }
 const prevButton = document.querySelector("#prev");
 prevButton.onclick = () => {
@@ -250,7 +259,8 @@ loader.load((_, resources) => {
     app.stage.addChild(foregroundSprites);
     midgroundSprites.addChild(landcape);
     background.position.set(0, 0);
-    playSceneAudio();
+    console.log("playing scene audio in loader...")
+    //playSceneAudio();
     resize();
     loadingScreen.classList.add("hide-opacity");
 });
@@ -285,9 +295,9 @@ setInterval(() => {
 
 // Update Shaders every minute
 setInterval(() => {
-    let oldHour = now.getHours();
-    now = new Date();
-    let curHour = now.getHours();
+    let oldHour = now.hour;
+    now = luxon.DateTime.utc();
+    let curHour = now.hour;
     let forceRefresh = false;
     // This means we've flipped days
     if (oldHour != curHour && curHour == 0) {
@@ -344,14 +354,13 @@ function updateShaderInfo(time, forceRefresh = false) {
 }
 
 function getTime(percentage = 0) {
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return new Date(today.getTime() + percentage * 24 * 60 * 60 * 1000);
+    return luxon.DateTime.now()
+        .set({hour: 0, minute: 0, second: 0, millisecond: 0})
+        .plus({seconds: percentage*24*60*60});
 }
 
 function showTimeDisplay(time) {
-    timeDisplay.innerHTML = time.toLocaleTimeString();
+    timeDisplay.innerHTML = time.toLocal().toLocaleString(luxon.DateTime.TIME_WITH_SECONDS);
 }
 
 function loadTextures(scenes) {
@@ -363,7 +372,7 @@ function loadTextures(scenes) {
         }
         if (scene.animations && scene.animations.length > 0) {
             scene.animations.forEach((animation) => {
-                if (! addedTextures.has(animation.image)) {
+                if (!addedTextures.has(animation.image)) {
                     addedTextures.add(animation.image)
                     loader.add(animation.image, animation.image)
                 }
@@ -408,6 +417,7 @@ async function loadScene(nextSceneIndex) {
             landcape.texture = loader.resources[scenes[sceneIndex].image].texture;
             horizonY = scenes[sceneIndex].horizonY;
             backgroundShader.uniforms.horizonY = horizonY;
+            console.log("playing scene audio...")
             await playSceneAudio()
             loadingScreen.removeEventListener(transitionEndEventName, loadSceneAfterTransition);
             loadingScreen.classList.add("hide-opacity");
@@ -415,6 +425,7 @@ async function loadScene(nextSceneIndex) {
         });
         loadingScreen.classList.remove("hide-opacity");
     } else {
+        console.log("playing scene audio...")
         await playSceneAudio()
         processing = false;
     }
@@ -422,6 +433,7 @@ async function loadScene(nextSceneIndex) {
 
 // Scene display logic
 async function playSceneAudio() {
+    console.log("calling play stream now...")
     await playStream(scenes[sceneIndex].stream.url, getConfigProperty("streamVolume"), scenes[sceneIndex].stream.effects, isChromium)
     await playSounds(scenes[sceneIndex].sounds, getConfigProperty("ambianceVolume"));
     sendSocketMessage(scenes[sceneIndex].stream.url);

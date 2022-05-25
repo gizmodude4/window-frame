@@ -3,12 +3,14 @@
   <head>
     <meta charset='utf-8'>
 
-    <title>Window Pane</title>
+    <title>Lazy Day Cafe</title>
     <meta name='author' content='ChromaStar'>
     <link rel='stylesheet' type='text/css' href='style.css'>
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon.png">
     <script src= 'js/SunCalc.min.js'></script>
-    <script src= 'js/Pizzicato.js'></script>
+    <script src= 'js/Pizzicato.js' type="module"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/6.2.2/browser/pixi.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@2.4.0/build/global/luxon.min.js"></script>
     <script id='foregroundDayNightShader' type='x-shader/x-fragment' >
       varying vec2 vTextureCoord;
       uniform sampler2D uSampler;
@@ -73,10 +75,16 @@
 
   <body>
     <div id="body">
+      <div id="consent-modal" class="modal">
+        <div class="modal-content">
+          <p>Welcome to Lazy Day Cafe, a site about creating immersive vibes, allowing you to focus on work, school, chilling out, or whatever it is you wanna do with it.</p>
+          <span id="consent-button" class="button">Begin Vibes</span>
+        </div>
+      </div>
       <img id='loading' class = 'loading-screen' />
       <div class="time-of-day-slider-container hidden">
         <input type="range" min="0" max="86399" value="0" class="time-of-day-slider" id="day-slider">
-        <span id="time-of-day-tooltip">12:00:00</span>
+        <span id="time-of-day-tooltip">12:00:00 AM</span>
       </div>
       <div class="side-bar collapse">
         <ul class="options-list">

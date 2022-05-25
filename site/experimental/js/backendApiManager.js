@@ -18,12 +18,17 @@ export async function getCollections() {
     return []
 }
 
-export async function getLatLon() {
+export async function getGeoData() {
     try {
-        let resp = fetch(`${backendServerUrl}/location`)
-        return (await resp).json()
+        const resp = fetch(`${backendServerUrl}/location`)
+        const body = await (await resp).json();
+        return {
+            'lat': body.ll[0],
+            'lon': body.ll[1],
+            'tz': body.timezone
+        }
     } catch (e) {
-        console.error("Couldn't fetch scenes", e);
+        console.error("Couldn't fetch geo data", e);
     }
     return null;
 }
@@ -37,7 +42,7 @@ export function sendSocketMessage(message) {
     }, 1000);
 }
 
-async function initializeWebsocket( receiveMetadata) {
+async function initializeWebsocket(receiveMetadata) {
     const ticket = await getWebsocketTicket(backendServerUrl);
     socket = new WebSocket(`${backendServerWebsocketUrl}/scenes/updates?ticket=${ticket}`);
     socket.onmessage = receiveMetadata;

@@ -95,7 +95,7 @@ function getFilterIndexAndMix(now, sunInfo, forceRefresh = false) {
     let minIndex = -1;
     let minDiff = 24*60*60*1000;
     for (let i = 0; i < dayNightShaderColors.length; i++) {
-        let diff = now - dayNightShaderColors[i][0]
+        const diff = getTimeDiff(now, dayNightShaderColors[i][0])
         if (diff >= 0 && diff < minDiff) {
             minIndex = i;
             minDiff = diff
@@ -110,6 +110,13 @@ function getFilterIndexAndMix(now, sunInfo, forceRefresh = false) {
     }
 }
 
+function getTimeDiff(date1, date2) {
+    const hoursDiff = date1.hour - date2.hour;
+    const minutesDiff = date1.minute - date2.minute;
+    const secondsDiff = date1.second - date2.second;
+    return (hoursDiff * 60 * 60 + minutesDiff * 60 + secondsDiff)*1000;
+}
+
 function getMixRange(index, dayNightShaderColors) {
     if (index == dayNightShaderColors.length - 1) {
         return getMidnightTomorrow() - dayNightShaderColors[index][0]
@@ -118,16 +125,14 @@ function getMixRange(index, dayNightShaderColors) {
 }
 
 function getMidnightTomorrow() {
-    let midnightTomorrow = new Date(Date.now())
-    midnightTomorrow.setDate(midnightTomorrow.getDate() + 1)
-    midnightTomorrow.setHours(0, 0, 0, 0);
-    return midnightTomorrow;
+    return luxon.DateTime.utc().plus({days: 1}).set({hour: 0, minute: 0, second: 0, millisecond: 0});
 }
 
 function createDayNightMap(now, sunInfo) {
+    const midnight = fromMilitaryTime(now, "00:00");
     return [
-        [fromMilitaryTime(now, "00:00"), 30, 120, 225, 0.6, 1.0, -0.2, 0.8, 0.68], // midnight
-        [fromMilitaryTime(now, "04:00"), 40, 125, 215, 0.65, 0.9, -0.2, 0.7, 0.65], // late night
+        [midnight, 30, 120, 225, 0.6, 1.0, -0.2, 0.8, 0.68], // midnight
+        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.2, 0.7, 0.65], // late night
         [sunInfo.nightEnd, 80, 80, 185, 0.8, 0.6, -0.15, 0.2, 0.8], // night end
         // add dawn?
         [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6], // sunrise peak
@@ -144,9 +149,10 @@ function createDayNightMap(now, sunInfo) {
 }
 
 function createDayNightMapClouds(now, sunInfo) {
+    const midnight = fromMilitaryTime(now, "00:00");
     return [
-        [fromMilitaryTime(now, "00:00"), 30, 120, 225, 0.6, 1.0, -0.4, 0.8, 0.68], // midnight
-        [fromMilitaryTime(now, "04:00"), 40, 125, 215, 0.65, 0.9, -0.4, 0.7, 0.65], // late night
+        [midnight, 30, 120, 225, 0.6, 1.0, -0.4, 0.8, 0.68], // midnight
+        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.4, 0.7, 0.65], // late night
         [sunInfo.nightEnd, 50, 50, 155, 0.8, 0.6, -0.15, 0.0, 0.80], // night end
         // add dawn?
         [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6], // sunrise peak
@@ -163,9 +169,10 @@ function createDayNightMapClouds(now, sunInfo) {
 }
 
 function createDayNightMapSky(now, sunInfo) {
+    const midnight = fromMilitaryTime(now, "00:00");
     return [
-        [fromMilitaryTime(now, "00:00"), 0, 1, 26, 4, 7, 48], // midnight
-        [fromMilitaryTime(now, "04:00"), 0, 1, 18, 4, 7, 48], // late night
+        [midnight, 0, 1, 26, 4, 7, 48], // midnight
+        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 0, 1, 18, 4, 7, 48], // late night
         [sunInfo.nightEnd, 0, 31, 64, 244, 69, 0], // night end
         // add dawn?
         [sunInfo.sunrise, 105, 129, 177, 253, 169, 167], // sunrise peak
@@ -182,8 +189,13 @@ function createDayNightMapSky(now, sunInfo) {
 }
 
 function fromMilitaryTime(now, time) {
-    let tmp = new Date(now.getTime());
     let split = time.split(":")
-    tmp.setHours(split[0], split[1], 0, 0);
-    return tmp;
+    return luxon.DateTime.utc().set({hour: split[0], minute: split[1], second: 0, millisecond: 0});
+}
+
+function getTimeNear(earlierTime, laterTime, percentage) {
+    let diff = getTimeDiff(laterTime, earlierTime);
+    return luxon.DateTime.utc()
+        .set({hour: 0, minute: 0, second: 0, millisecond: 0})
+        .plus({millisecond: Math.floor(percentage * diff)});
 }

@@ -1,9 +1,14 @@
+import Pizzicato from "./Pizzicato.js";
+
 let audioElement;
 let audioStream;
+let rawSourceNode;
+let isChromium;
 let streamError = 0;
 let currentlyPlayingFileAudio = {};
 
-export const initializeAudio = (elem) => {
+export const initializeAudio = (elem, usingChrome) => {
+    isChromium = usingChrome;
     audioElement = elem;
     audioElement.addEventListener('error', () => {
         streamError++;
@@ -29,39 +34,33 @@ export const createEffect = (type, config) => {
     }
 }
 
-export const playStream = async (streamLink, streamVolume, soundEffects, isChromium, cb) => {
-    if (audioElement.src != streamLink) {
-        if (audioStream) {
-           audioStream.disconnect();
-           audioStream = null;
-        }
+export const playStream = async (streamLink, streamVolume, soundEffects) => {
+    if (!audioStream) {
         audioElement.src = streamLink;
         audioElement.oncanplaythrough = () => {
+            audioElement.oncanplaythrough = null;
+            rawSourceNode = Pizzicato.context.createMediaElementSource(audioElement);
             audioStream = new Pizzicato.Sound({
                 'source': 'audioElement',
                 'options': {
+                    'rawSourceNode': rawSourceNode,
                     'audioElement': audioElement
                 }
             });
             applyEffects(audioStream, soundEffects);
             audioStream.play();
-            audioStream.volume = streamVolume/100;
             audioElement.volume = streamVolume/100;
-            audioElement.muted = isChromium;
-            cb && cb();
         };
     } else {
-        if (audioStream) {
-           removeEffects(audioStream);
-           applyEffects(audioStream, soundEffects);
-            if (!audioStream.playing) {
-               audioStream.play();
-            }
-            audioStream.volume = streamVolume/100;
-            audioElement.volume = streamVolume/100;
-            audioElement.muted = isChromium;
+        removeEffects(audioStream);
+        applyEffects(audioStream, soundEffects);
+        audioStream.sourceNode.mediaElement.src = streamLink
+        if (!audioStream.playing) {
+            console.log("playing inside else");
+            audioStream.play();
         }
-        cb && cb();
+        console.log(audioStream);
+        audioStream.volume = streamVolume/100;
     }
 }
 
@@ -166,4 +165,11 @@ const playSoundFromFile = async (audio, volumeOverride) => {
             resolve(newAudio);
         });
     });
+}
+
+const playAudioElement = () => {
+    audioElement.play()
+        .catch(e => {
+            console.log("couldn't play audio, probably a permissions thing")
+        });
 }

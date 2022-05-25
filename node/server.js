@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { WebSocketServer } from 'ws';
+import geoip from 'geoip-lite';
 import dotenv from 'dotenv';
 import http from 'http';
 import https from 'https';
@@ -160,19 +161,12 @@ function setUpServer(config) {
                 req.socket.remoteAddress ||
                 null;
     const ipv4 = fullIp.replace(/^.*:/, '');
-    console.log(fullIp);
-    console.log(ipv4);
     if (!ipv4) {
-      res.send(null)
+      res.send(null);
       return;
     }
-    axios.get(`https://ipapi.co/${ipv4}/json/`).then((response) => {
-      res.send({
-        "lat": response.data.latitude,
-        "lon": response.data.longitude,
-      });
-    });
-  })
+    res.send(geoip.lookup(ipv4));
+  });
 
   app.put('/scenes/:sceneId/skip', async function (req, res) {
     var sceneId = req.params.sceneId;
