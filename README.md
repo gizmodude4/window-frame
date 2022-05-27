@@ -1,90 +1,126 @@
 # window-frame
-Digital Window Frame software for Raspberry Pi
+window-frame is the software powering [Lazy Day Cafe](https://lazyday.cafe)
 
 # Demo
-I did a YouTube video showing off what this can do here: https://www.youtube.com/watch?v=3YfQFlvKxRY
-
-## Current Windows Installation
-- Install `windows-service.js` using `node-windows`, an npm downloadable library to run the Node.JS server on startup
-- Install AutoFullscreen extension for Firefox
-- Install Apache (currently in `C:\Apache24`) and copy `../site` files to the `htdocs` directory. Probably should have symlinked
-- Installed Node/Python/Visual Studio (for initial installation)
-    - Uninstalled all of Visual Studio afterward
-- Installed PC Remote on Android phone and PC Remote Server on system
-    - Security issues?
+To come.
 
 ## Current Linux Installation
-- Install liquidsoap, icecast, NodeJS, and Apache using whatever package manager you'd like.
+- Git clone the repo
+- Run `npm install` in the `node` directory
+- Modify `window-frame.service` to point to the base directory of Node (I'm running it in root's home directory)
+- Copy `window-frame.service` in to `/usr/lib/systemd`
+- Run `systemctl start window-frame`
+- To enable at startup, run `systemctl enable window-frame`
+- If running on a Raspberry Pi on startup, create a user-specific systemd file that points to the `startup.sh` script in the `startup` directory.
+
+## Running a local Icecast server
+- Install liquidsoap, and Icecast from the applicable package manager.
 - Create a symlink from your apache home directory to the `site` directory in this repo.
 - Copy the `icecast.xml` file to the icecast installation folder
-- Create a directory of all the music you want to play and update `liquidsoapconfig.liq` to point to that directory
-- Create systemd installation file to open icecast, then liquidsoap (pass in the `liquidsoapconfig.liq` file as a parameter), then NodeJS (`node server.js --config playlist.json`), then the startup script in the startup directory (in that order) on startup.
-    - The startup script should be a user-specific systemd file
+- Create a directory of all the music you want to play and update `liquidsoapconfig.liq` to point to that directory.
+- To make sure the stream is up with the server, create systemd files for both liquidsoap and icecast.
+- Modify `window-frame.service` to rely on those systemd files.
 
-## How to Use the Window Frame
-The actual display is just a web browser window (Chromium on Raspberry Pi and Firefox on Windows) that accepts keyboard commands (which is what the arcade button controller is doing on the mounted one.) The commands are as follows
+## Keyboard Shortcuts
 - `s` will switch scenes
-- `e` will switch atmospheres
-- `m` will switch tracks (takes somewhere between 6-10 seconds b/c of some goofiness with liquidsoap and icecast)
 
-Currently, to build a scene, you need to build a big ol' JSON file like `playlist.json`, which is fed in to the . Eventually, I'll add a lightweight tool to generate these and preview them, but for now, you're kind of flying blind in the text work, so good luck with that.
+Currently, to build a scene, you need to build a big ol' JSON file like `v2-playlist.json`, which is fed in to the backend. Eventually, I'll add a lightweight tool to generate these and preview them, but for now, you're kind of flying blind in the text work, so good luck with that.
 
-### Scene and Atmosphere Construction
-#### Scenes
-Scenes are comprised of a link to the admin URL on liquidsoap (used for track switching), the stream URL, stream volume, an ID, any number of effects you want on the stream, and a number of atmospheres. The structure for a scene looks like this:
+### Scene Construction
+### Collections
+Currently, collections are just a collection of scenes of one type -- STATIC. In the future, support will be added for a SCHEDULED collection, namely one that switch stream audio or scenes based on the current time. The idea behind this is the vibes you want at 11AM are probably very different than the ones you want at 11PM. Collections look like this:
 
 ```json
 {
-  "id": "cyberpunk-cafe",
-  "audioEffects": [
-      {
-          "effectType": "lpf",
-          "config": {
-              "frequency": 15000
-          }
-      },
-      {
-          "effectType": "reverb",
-          "config": {
-              "time": 1.63,
-              "decay": 2,
-              "mix": 0.5
-          }
-      }
-  ],
-  "stream": "http://localhost:8002/stream",
-  "streamVolume": 40,
-  "admin": "http://localhost:8005",
-  "atmosphere": [
-      ...
-  ]
+    "collections": [
+        "collectionType": "STATIC",
+        "scenes": [
+            {}
+        ]
+    ]
 }
 ```
-#### Atmospheres
-Scenes have a number of atmospheres and each atmosphere can override the playlist volume, define its own sound effects, and each of those sound effects can have their own filters. The structure for at atmosphere looks like this:
+
+#### Scenes
+Scenes are comprised of a link to the admin URL on liquidsoap if running Icecast locally (used for track switching), the stream URL, stream volume, an ID, the horizon line, any random animations, and sounds with their effects. The structure for a scene looks like this:
 
 ```json
 {
-    "streamVolume": 80,
-    "name": "Roast in the Shell (ear buds in)",
-    "image": "assets/cyberpunk-cafe.gif",
-    "audio": [
-        {
-            "link": "assets/songs/cafe.mp3",
-            "volume": 100,
-            "loop": true,
-            "audioEffects": [
-                {
-                    "effectType": "lpf",
-                    "config": {
-                        "frequency": 500
-                    }
-                }
-            ]
+    "id": "peaceful-valley",
+    "name": "Peaceful Valley",
+    "image": "assets/peaceful-valley.png",
+    "horizonY": 0.25,
+    "animations": [
+    {
+        "spawnChance": 0.10,
+        "backgroundChance": 0.5,
+        "image": "assets/cloud-1.png",
+        "sizeMod": 0.9,
+        "movement": {
+        "duration": 90,
+        "direction": "RIGHT"
         }
+    },
+    {
+        "spawnChance": 0.10,
+        "backgroundChance": 0.5,
+        "image": "assets/cloud-1.png",
+        "sizeMod": 0.9,
+        "movement": {
+        "duration": 120,
+        "direction": "RIGHT"
+        }
+    },
+    {
+        "spawnChance": 0.10,
+        "backgroundChance": 0.9,
+        "image": "assets/cloud-3.png",
+        "sizeMod": 0.5,
+        "movement": {
+        "duration": 90,
+        "direction": "RIGHT"
+        }
+    }
+    ],
+    "stream": {
+    "url": "http://usa9.fastcast4u.com/proxy/jamz?mp=/1",
+    "volume": 30,
+    "effects": [
+        {
+        "effectType": "hpf",
+        "config": {
+            "frequency": 200
+        }
+        }
+    ]
+    },
+    "sounds": [
+    {
+        "url": "assets/songs/valley.wav",
+        "volume": 50,
+        "loop": true
+    },
+    {
+        "url": "assets/songs/quiet-street-noises.mp3",
+        "volume": 20,
+        "loop": true,
+        "effects": [
+        {
+            "effectType": "reverb",
+            "config": {
+            "time": 2.65,
+            "decay": 3,
+            "mix": 0.85
+            }
+        }
+        ]
+    }
     ]
 }
 ```
 
 #### Effects
-Effects live inside the `audioEffects` array in both Atmosphere audio and scenes. They have the same structure of just an `effectType` and a `config`. Currently, the only supported audio effects are high pass filter (`hpf`), low pass filter (`lpf`), and reverb (`reverb`), though any effect defined by [Pizzicato.js](https://github.com/alemangui/pizzicato) will also work, provided you update `AudioEffectCreator.js` to handle the label you pass in. Similarly, the configs you should provide are defined by Pizzicato.
+Effects live inside the `audioEffects` array in both Atmosphere audio and scenes. They have the same structure of just an `effectType` and a `config`. Currently, the only supported audio effects are high pass filter (`hpf`), low pass filter (`lpf`), and reverb (`reverb`), though any effect defined by [Pizzicato.js](https://github.com/alemangui/pizzicato) will also work, provided you update `audioManager.js` to handle the label you pass in. Similarly, the configs you should provide are defined by Pizzicato.
+
+#### Pizzicato
+Pizzicato is the libary used in this project to modify audio on the fly. Unfortunately, it's no longer updated and this project demanded the use of audio capturing via the audio media element, which I've added. As a result, Pizzicato is included in its entirety in this repo, plus the changes.

@@ -108,7 +108,7 @@ body, html {
   margin-left: auto;
   margin-right: auto;
   z-index: 10;
-  background-image: url("../assets/loading.gif");
+  background-image: url("assets/loading.gif");
   background-color:black;
   transition: opacity 1s ease-in-out;
   opacity: 1;
