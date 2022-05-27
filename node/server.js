@@ -47,6 +47,7 @@ const corsOptions = {
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
+      console.error(`Invalid origin ${origin}`)
       callback(new Error('Not allowed by CORS'))
     }
   }
