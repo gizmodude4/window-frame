@@ -41,7 +41,7 @@
             }
           ],
           "stream": {
-            "url": "http://usa9.fastcast4u.com/proxy/jamz?mp=/1",
+            "url": "https://usa9.fastcast4u.com/proxy/jamz?mp=/1",
             "volume": 30,
             "effects": [
               {
