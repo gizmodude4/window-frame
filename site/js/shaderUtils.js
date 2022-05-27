@@ -95,7 +95,6 @@ function getFilterIndexAndMix(now, sunInfo, forceRefresh = false) {
     let minIndex = -1;
     let minDiff = 24*60*60*1000;
     for (let i = 0; i < dayNightShaderColors.length; i++) {
-        console.log(`${now.toISO()} ${dayNightShaderColors[i][0].toISO()}`)
         const diff = getTimeDiff(now, dayNightShaderColors[i][0])
         if (diff >= 0 && diff < minDiff) {
             minIndex = i;
