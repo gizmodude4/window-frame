@@ -42,7 +42,7 @@
           ],
           "stream": {
             "url": "https://usa9.fastcast4u.com/proxy/jamz?mp=/1",
-            "volume": 30,
+            "volume": 100,
             "effects": [
               {
                 "effectType": "hpf",
@@ -55,12 +55,12 @@
           "sounds": [
             {
               "url": "assets/songs/valley.wav",
-              "volume": 50,
+              "volume": 100,
               "loop": true
             },
             {
               "url": "assets/songs/quiet-street-noises.mp3",
-              "volume": 20,
+              "volume": 40,
               "loop": true,
               "effects": [
                 {
