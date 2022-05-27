@@ -1,4 +1,4 @@
-(function(root) {
+export default (function(root) {
 	'use strict';
 
 	var Pizzicato = {};
@@ -277,7 +277,7 @@
 			if (util.isObject(description)) {
 	
 				if (!util.isString(description.source) || supportedSources.indexOf(description.source) === -1)
-					return 'Specified source not supported. Sources can be wave, file, input or script';
+					return 'Specified source not supported. Sources can be wave, file, input, script, or audio element';
 	
 				if (description.source === 'file' && (!description.options || !description.options.path))
 					return 'A path is needed for sounds with a file source';
@@ -384,11 +384,11 @@
 
 		function initializeWithAudioElement(options, callback) {
 			this.getRawSourceNode = function() {
-				if (options.audioElement.mozCaptureStream) {
-					return Pizzicato.context.createMediaStreamSource(options.audioElement.mozCaptureStream());
-				} else {
-					return Pizzicato.context.createMediaStreamSource(options.audioElement.captureStream());
+				if (options.rawSourceNode && options.rawSourceNode.gainSuccessor) {
+					options.rawSourceNode.gainSuccessor.disconnect();
+					options.rawSourceNode.gainSuccessor = null;
 				}
+				return options.rawSourceNode;
 			};
 			this.sourceNode = this.getRawSourceNode();
 			this.sourceNode.gainSuccessor = Pz.context.createGain();
@@ -736,35 +736,63 @@
 			enumerable: true,
 	
 			value: function() {
+				const newGainSuccessor = Pz.context.createGain();
+				const fadeNode = this.fadeNode;
+				const reuse = this.reuseSourceNode();
+
+				// Depending on whether or not we're reusing the same sourceNode,
+				// meaning we shouldn't disconnect it, we'll need to set up the
+				// new gain successor at a different time.
+				function setNewGainSuccessor(node, gain, fade) {
+					node.gainSuccessor = gain;
+					node.connect(node.gainSuccessor);
+					node.gainSuccessor.connect(fade);
+				}
+
 				if (!!this.sourceNode) {
 	
 					// Directly disconnecting the previous source node causes a 
 					// 'click' noise, especially noticeable if the sound is played 
 					// while the release is ongoing. To address this, we fadeout the 
-					// old source node before disonnecting it.
+					// old source node before disconnecting it.
 	
 					var previousSourceNode = this.sourceNode;
 					previousSourceNode.gainSuccessor.gain.setValueAtTime(previousSourceNode.gainSuccessor.gain.value, Pz.context.currentTime);
 					previousSourceNode.gainSuccessor.gain.linearRampToValueAtTime(0.0001, Pz.context.currentTime + 0.2);
 					setTimeout(function() {
-						previousSourceNode.disconnect();
-						previousSourceNode.gainSuccessor.disconnect();
+						if (!reuse) {
+							previousSourceNode.gainSuccessor && previousSourceNode.gainSuccessor.disconnect();
+							previousSourceNode.disconnect();
+						} else {
+							setNewGainSuccessor(previousSourceNode, newGainSuccessor, fadeNode)
+						}
 					}, 200);
 				}
-	
+				
 				var sourceNode = this.getRawSourceNode();
 	
 				// A gain node will be placed after the source node to avoid
 				// clicking noises (by fading out the sound)
-				sourceNode.gainSuccessor = Pz.context.createGain();
-				sourceNode.connect(sourceNode.gainSuccessor);
-				sourceNode.gainSuccessor.connect(this.fadeNode);
+				if (!reuse) {
+					setNewGainSuccessor(sourceNode, newGainSuccessor, fadeNode)
+				}
 				this.fadeNode.connect(this.getInputNode());
 	
 				if (Pz.Util.isAudioBufferSourceNode(sourceNode))
 					sourceNode.onended = this.onEnded(sourceNode).bind(this);
 	
 				return sourceNode;
+			}
+		},
+
+		/**
+		 * Returns 
+		 */
+		reuseSourceNode: {
+			enumerable: false,
+
+			value: function() {
+				return this.sourceNode && this.sourceNode.toString() == '[object MediaElementAudioSourceNode]';
 			}
 		},
 	
