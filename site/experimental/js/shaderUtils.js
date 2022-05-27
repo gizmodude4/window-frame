@@ -95,6 +95,7 @@ function getFilterIndexAndMix(now, sunInfo, forceRefresh = false) {
     let minIndex = -1;
     let minDiff = 24*60*60*1000;
     for (let i = 0; i < dayNightShaderColors.length; i++) {
+        console.log(`${now.toISO()} ${dayNightShaderColors[i][0].toISO()}`)
         const diff = getTimeDiff(now, dayNightShaderColors[i][0])
         if (diff >= 0 && diff < minDiff) {
             minIndex = i;
@@ -125,7 +126,7 @@ function getMixRange(index, dayNightShaderColors) {
 }
 
 function getMidnightTomorrow() {
-    return luxon.DateTime.utc().plus({days: 1}).set({hour: 0, minute: 0, second: 0, millisecond: 0});
+    return luxon.DateTime.now().plus({days: 1}).set({hour: 0, minute: 0, second: 0, millisecond: 0});
 }
 
 function createDayNightMap(now, sunInfo) {
@@ -190,12 +191,12 @@ function createDayNightMapSky(now, sunInfo) {
 
 function fromMilitaryTime(now, time) {
     let split = time.split(":")
-    return luxon.DateTime.utc().set({hour: split[0], minute: split[1], second: 0, millisecond: 0});
+    return luxon.DateTime.now().set({hour: split[0], minute: split[1], second: 0, millisecond: 0});
 }
 
 function getTimeNear(earlierTime, laterTime, percentage) {
     let diff = getTimeDiff(laterTime, earlierTime);
-    return luxon.DateTime.utc()
+    return luxon.DateTime.now()
         .set({hour: 0, minute: 0, second: 0, millisecond: 0})
         .plus({millisecond: Math.floor(percentage * diff)});
 }

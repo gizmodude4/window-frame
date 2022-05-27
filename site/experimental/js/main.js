@@ -35,7 +35,7 @@ if (location.origin === 'https://lazyday.cafe') {
     backendServerWebsocket = 'wss://backend.lazyday.cafe';
 }
 
-initializeAudio(stream, isChromium);
+initializeAudio(stream);
 await initializeBackend(backendServerUrl, backendServerWebsocket, (metadata) => {
     artistMetadata.innerText = metadata.data
 });
@@ -92,8 +92,6 @@ let backgroundShader;
 
 /*
 TODO:
-- CORS on the site
-
 - light shaders
 - random animations
 */
@@ -137,8 +135,15 @@ function hideOnClickOutside(element) {
 const timeOfDaySlider = document.getElementById("day-slider");
 const timeOfDaySliderContainer = document.querySelector(".time-of-day-slider-container");
 const timeOfDayTooltip = document.getElementById("time-of-day-tooltip");
+timeOfDaySlider.value = timeToDayPercent(now) * timeOfDaySlider.max;
+updateSliderDisplay();
 
 timeOfDaySlider.oninput = () => {
+    updateSliderDisplay();    
+    updateShaderInfo(shaderOverride);
+}
+
+function updateSliderDisplay () {
     const percent = timeOfDaySlider.value/timeOfDaySlider.max;
     shaderOverride = getTime(percent);
     if (percent > 0.9) {
@@ -149,7 +154,6 @@ timeOfDaySlider.oninput = () => {
         timeOfDayTooltip.style.left = `${percent*100}%`;
     }
     timeOfDayTooltip.innerHTML = shaderOverride.toLocaleString(luxon.DateTime.TIME_WITH_SECONDS);
-    updateShaderInfo(shaderOverride);
 }
 
 const timeOfDayButton = document.querySelector("#time-of-day");
@@ -207,7 +211,6 @@ audioFiltersButton.onclick = (event) => {
 const nextButton = document.querySelector("#next");
 nextButton.onclick = () => {
     loadNextScene();
-    //playSceneAudio();
 }
 const prevButton = document.querySelector("#prev");
 prevButton.onclick = () => {
@@ -219,7 +222,7 @@ musicSlider.value = getConfigProperty("streamVolume");
 musicSlider.oninput = () => {
     const volPercent = musicSlider.value/100;
     updateConfig({streamVolume: musicSlider.value});
-    setCurrentlyPlayingStreamVolume(scenes[sceneIndex].stream.volume*volPercent, isChromium);
+    setCurrentlyPlayingStreamVolume(volPercent * scenes[sceneIndex].stream.volume/100);
 }
 
 const ambianceSlider = document.querySelector("#ambiance");
@@ -228,7 +231,7 @@ ambianceSlider.oninput = () => {
     const volPercent = ambianceSlider.value/100;
     updateConfig({ambianceVolume: ambianceSlider.value});
     scenes[sceneIndex].sounds.forEach(sound => {
-        setCurrentlyPlayingSoundVolume(scenes[sceneIndex].sounds, sound.volume*volPercent);
+        setCurrentlyPlayingSoundVolume(sound, volPercent * sound.volume/100);
     });
 }
 
@@ -259,8 +262,6 @@ loader.load((_, resources) => {
     app.stage.addChild(foregroundSprites);
     midgroundSprites.addChild(landcape);
     background.position.set(0, 0);
-    console.log("playing scene audio in loader...")
-    //playSceneAudio();
     resize();
     loadingScreen.classList.add("hide-opacity");
 });
@@ -296,7 +297,7 @@ setInterval(() => {
 // Update Shaders every minute
 setInterval(() => {
     let oldHour = now.hour;
-    now = luxon.DateTime.utc();
+    now = luxon.DateTime.now();
     let curHour = now.hour;
     let forceRefresh = false;
     // This means we've flipped days
@@ -359,6 +360,10 @@ function getTime(percentage = 0) {
         .plus({seconds: percentage*24*60*60});
 }
 
+function timeToDayPercent(now) {
+    return (now.hour * 60 * 60 + now.minute * 60 + now.second) / 86400;
+}
+
 function showTimeDisplay(time) {
     timeDisplay.innerHTML = time.toLocal().toLocaleString(luxon.DateTime.TIME_WITH_SECONDS);
 }
@@ -417,7 +422,6 @@ async function loadScene(nextSceneIndex) {
             landcape.texture = loader.resources[scenes[sceneIndex].image].texture;
             horizonY = scenes[sceneIndex].horizonY;
             backgroundShader.uniforms.horizonY = horizonY;
-            console.log("playing scene audio...")
             await playSceneAudio()
             loadingScreen.removeEventListener(transitionEndEventName, loadSceneAfterTransition);
             loadingScreen.classList.add("hide-opacity");
@@ -425,7 +429,6 @@ async function loadScene(nextSceneIndex) {
         });
         loadingScreen.classList.remove("hide-opacity");
     } else {
-        console.log("playing scene audio...")
         await playSceneAudio()
         processing = false;
     }
@@ -433,9 +436,9 @@ async function loadScene(nextSceneIndex) {
 
 // Scene display logic
 async function playSceneAudio() {
-    console.log("calling play stream now...")
-    await playStream(scenes[sceneIndex].stream.url, getConfigProperty("streamVolume"), scenes[sceneIndex].stream.effects, isChromium)
-    await playSounds(scenes[sceneIndex].sounds, getConfigProperty("ambianceVolume"));
+    const streamVol = scenes[sceneIndex].stream.volume/100 * getConfigProperty("streamVolume") / 100;
+    await playStream(scenes[sceneIndex].stream.url, streamVol, scenes[sceneIndex].stream.effects, isChromium)
+    await playSounds(scenes[sceneIndex].sounds, getConfigProperty("ambianceVolume")/100);
     sendSocketMessage(scenes[sceneIndex].stream.url);
 }
 

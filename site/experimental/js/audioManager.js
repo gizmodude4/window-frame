@@ -3,12 +3,10 @@ import Pizzicato from "./Pizzicato.js";
 let audioElement;
 let audioStream;
 let rawSourceNode;
-let isChromium;
 let streamError = 0;
 let currentlyPlayingFileAudio = {};
 
-export const initializeAudio = (elem, usingChrome) => {
-    isChromium = usingChrome;
+export const initializeAudio = (elem) => {
     audioElement = elem;
     audioElement.addEventListener('error', () => {
         streamError++;
@@ -48,19 +46,18 @@ export const playStream = async (streamLink, streamVolume, soundEffects) => {
                 }
             });
             applyEffects(audioStream, soundEffects);
+            audioStream.volume = streamVolume;
+            audioElement.volume = streamVolume;
             audioStream.play();
-            audioElement.volume = streamVolume/100;
         };
     } else {
         removeEffects(audioStream);
         applyEffects(audioStream, soundEffects);
         audioStream.sourceNode.mediaElement.src = streamLink
         if (!audioStream.playing) {
-            console.log("playing inside else");
             audioStream.play();
         }
-        console.log(audioStream);
-        audioStream.volume = streamVolume/100;
+        audioStream.volume = streamVolume;
     }
 }
 
@@ -88,10 +85,9 @@ const applyEffects = (audio, effects) => {
     effects && effects.forEach(effect => audio.addEffect(effect));
 }
 
-const playAudio = async (audioDefinition, volume) => {
-    volume = volume ? volume/100 : 1;
+const playAudio = async (audioDefinition, volumeCap) => {
     try {
-        return playSoundFromFile(audioDefinition, volume).then(audio => {
+        return playSoundFromFile(audioDefinition, volumeCap).then(audio => {
             audio.play();
             currentlyPlayingFileAudio[audioDefinition.url] = audio;
             audio.on("end", audio.disconnect);
@@ -124,35 +120,33 @@ export const stopAllPlayingAudio = () => {
     currentlyPlayingFileAudio = {};
 }
 
-export const setCurrentlyPlayingStreamVolume = (volume, isChromium) => {
+export const setCurrentlyPlayingStreamVolume = (volume) => {
     if (audioElement) {
-        audioElement.volume = volume/100;
-        audioElement.muted = isChromium;
+        audioElement.volume = volume;
     }
     if (audioStream) {
-        audioStream.volume = volume/100;
+        audioStream.volume = volume;
     }
 }
 
-export const setCurrentlyPlayingSoundVolume = (audioLink, volume) => {
-    if (audioLink in currentlyPlayingFileAudio) {
-       currentlyPlayingFileAudio[audioLink].volume = volume/100;
+export const setCurrentlyPlayingSoundVolume = (sound, volume) => {
+    if (sound.url in currentlyPlayingFileAudio) {
+       currentlyPlayingFileAudio[sound.url].volume = volume;
     }
 }
 
 export const playNextSong = (id, cb) => {
     // This only works for the localhosted audio stream
-    // id = scenes[sceneIndex].id
     fetch(`http://localhost:8080/scenes/${id}/skip`, {method: 'PUT'}).then(cb)
 }
 
-const playSoundFromFile = async (audio, volumeOverride) => {
+const playSoundFromFile = async (audio, volumeCap) => {
     return new Promise((resolve) => {
         const newAudio = new Pizzicato.Sound({ 
             source: 'file',
             options: { 
                 path: audio.url, 
-                volume: volumeOverride * (audio.volume/100),
+                volume: volumeCap * (audio.volume/100),
                 release: audio.fadeDuration/1000,
                 attack: audio.fadeDuration/1000,
                 loop: audio.loop
@@ -165,11 +159,4 @@ const playSoundFromFile = async (audio, volumeOverride) => {
             resolve(newAudio);
         });
     });
-}
-
-const playAudioElement = () => {
-    audioElement.play()
-        .catch(e => {
-            console.log("couldn't play audio, probably a permissions thing")
-        });
 }

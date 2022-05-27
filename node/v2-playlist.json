@@ -45,7 +45,7 @@
             "volume": 30,
             "effects": [
               {
-                "effectType": "lpf",
+                "effectType": "hpf",
                 "config": {
                   "frequency": 200
                 }
