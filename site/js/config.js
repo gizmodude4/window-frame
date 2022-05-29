@@ -2,7 +2,9 @@ const defaultConfig = {
     "dynamicTimeOfDay": true,
     "audioFiltersOn": true,
     "streamVolume": 100,
-    "ambianceVolume": 100
+    "streamMuted": false,
+    "ambianceVolume": 100,
+    "ambianceMuted": false
 };
 
 const config = getConfig();
