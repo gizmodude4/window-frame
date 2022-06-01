@@ -92,6 +92,9 @@ let backgroundShader;
 
 /*
 TODO:
+- change SVG to have an X when muted
+- If we change the volume on a slider, do we want to unmute?
+
 - light shaders
 - random animations
 */
@@ -104,20 +107,13 @@ btn.onclick = () => {
     playSceneAudio();
 } 
 
-const musicIcon = document.querySelector("#music-icon");
-const ambianceIcon = document.querySelector("#ambiance-icon");
 const sideBar = document.querySelector('.side-bar');
 sideBar.onclick = (event) => {
-    const validTarget = (event.target == sideBar ||
-                         event.target == ambianceIcon ||
-                         event.target == musicIcon);
-    if (validTarget && sideBar.classList.contains('collapse')) {
+    if (event.target == sideBar && sideBar.classList.contains('collapse')) {
         sideBar.classList.toggle('collapse');
         hideOnClickOutside(sideBar);
     }
 };
-musicIcon.onclick = sideBar.onclick;
-ambianceIcon.onclick = sideBar.onclick;
 
 function hideOnClickOutside(element) {
     const outsideClickListener = event => {
@@ -167,13 +163,7 @@ timeOfDayButton.onclick = (event) => {
     event.preventDefault();
     timeOfDayCheckbox.checked = !timeOfDayCheckbox.checked;
     toggleTimeOfDay(timeOfDayCheckbox.checked);
-    if (timeOfDayCheckbox.checked) {
-        timeOfDayIcon.classList.remove("inactive-svg")
-        timeOfDayIcon.classList.add("active-svg")
-    } else {
-        timeOfDayIcon.classList.add("inactive-svg")
-        timeOfDayIcon.classList.remove("active-svg")
-    }
+    setSvgActive(timeOfDayIcon, timeOfDayCheckbox.checked)
     updateConfig({dynamicTimeOfDay: timeOfDayCheckbox.checked});
 }
 
@@ -196,14 +186,11 @@ audioFiltersButton.onclick = (event) => {
     // because the span and checkbox are on top of each other.
     event.preventDefault();
     audioFiltersCheckbox.checked = !audioFiltersCheckbox.checked;
+    setSvgActive(audioFiltersIcon, audioFiltersCheckbox.checked);
     if (audioFiltersCheckbox.checked) {
         reenableEffects(scenes[sceneIndex]);
-        audioFiltersIcon.classList.remove("inactive-svg")
-        audioFiltersIcon.classList.add("active-svg")
     } else {
         disableEffects();
-        audioFiltersIcon.classList.add("inactive-svg")
-        audioFiltersIcon.classList.remove("active-svg")
     }
     updateConfig({audioFiltersOn: audioFiltersCheckbox.checked});
 }
@@ -217,10 +204,16 @@ prevButton.onclick = () => {
     loadPrevScene();
 }
 
+if (scenes.length <= 1) {
+    nextButton.style.display = "none";
+    prevButton.style.display = "none";
+}
+
 const musicSlider = document.querySelector("#music");
 musicSlider.value = getConfigProperty("streamVolume");
 musicSlider.oninput = () => {
-    const volPercent = musicSlider.value/100;
+    const muted = getConfigProperty("streamMuted");
+    const volPercent = muted ? 0 : musicSlider.value/100;
     updateConfig({streamVolume: musicSlider.value});
     setCurrentlyPlayingStreamVolume(volPercent * scenes[sceneIndex].stream.volume/100);
 }
@@ -228,12 +221,47 @@ musicSlider.oninput = () => {
 const ambianceSlider = document.querySelector("#ambiance");
 ambianceSlider.value = getConfigProperty("ambianceVolume");
 ambianceSlider.oninput = () => {
-    const volPercent = ambianceSlider.value/100;
+    const muted = getConfigProperty("ambianceMuted");
+    const volPercent = muted ? 0 : ambianceSlider.value/100;
     updateConfig({ambianceVolume: ambianceSlider.value});
     scenes[sceneIndex].sounds.forEach(sound => {
         setCurrentlyPlayingSoundVolume(sound, volPercent * sound.volume/100);
     });
 }
+
+const musicIcon = document.querySelector("#music-icon");
+musicIcon.onclick = () => {
+    const muted = !(!!getConfigProperty("streamMuted"));
+    setSvgActive(musicIcon, !muted);
+    updateConfig({streamMuted: muted});
+    const volPercent = musicSlider.value/100;
+    const newVol = muted ? 0 : volPercent * scenes[sceneIndex].stream.volume/100;
+    setCurrentlyPlayingStreamVolume(newVol);
+}
+
+const ambianceIcon = document.querySelector("#ambiance-icon");
+ambianceIcon.onclick = () => {
+    const muted = !(!!getConfigProperty("ambianceMuted"));
+    setSvgActive(ambianceIcon, !muted);
+    updateConfig({ambianceMuted: muted});
+    const volPercent = ambianceSlider.value/100;
+    const newVol = muted ? 0 : volPercent * scenes[sceneIndex].stream.volume/100;
+    scenes[sceneIndex].sounds.forEach(sound => {
+        setCurrentlyPlayingSoundVolume(sound, newVol);
+    });
+}
+
+function setIconsEnabled() {
+    const musicMuted = (!!getConfigProperty("streamMuted"));
+    setSvgActive(musicIcon, !musicMuted);
+    const ambianceMuted = (!!getConfigProperty("ambianceMuted"));
+    setSvgActive(ambianceIcon, !ambianceMuted);
+    const dynamicTimeOfDay = (!!getConfigProperty("dynamicTimeOfDay"));
+    setSvgActive(timeOfDayIcon, dynamicTimeOfDay)
+    const audioFiltersOn = (!!getConfigProperty("audioFiltersOn"));
+    setSvgActive(audioFiltersIcon, audioFiltersOn);
+}
+setIconsEnabled();
 
 // The `load` method loads the queue of resources, and calls the passed in callback called once all
 // resources have loaded.
@@ -436,9 +464,12 @@ async function loadScene(nextSceneIndex) {
 
 // Scene display logic
 async function playSceneAudio() {
-    const streamVol = scenes[sceneIndex].stream.volume/100 * getConfigProperty("streamVolume") / 100;
+    const streamMuted = getConfigProperty("streamMuted");
+    const streamVol = streamMuted ? 0 : scenes[sceneIndex].stream.volume/100 * getConfigProperty("streamVolume") / 100;
     await playStream(scenes[sceneIndex].stream.url, streamVol, scenes[sceneIndex].stream.effects, isChromium)
-    await playSounds(scenes[sceneIndex].sounds, getConfigProperty("ambianceVolume")/100);
+    const ambianceMuted = getConfigProperty("ambianceMuted");
+    const ambianceVol = ambianceMuted ? 0 : getConfigProperty("ambianceVolume")/100
+    await playSounds(scenes[sceneIndex].sounds, ambianceVol);
     sendSocketMessage(scenes[sceneIndex].stream.url);
 }
 
@@ -524,6 +555,16 @@ function getRandomValue(array) {
     let index = Math.floor(Math.random()*array.length)
     if (index === array.length) { index = 0}
     return array[index];
+}
+
+function setSvgActive(icon, active) {
+    if (active) {
+        icon.classList.remove("inactive-svg")
+        icon.classList.add("active-svg")
+    } else {
+        icon.classList.add("inactive-svg")
+        icon.classList.remove("active-svg")
+    }
 }
 
 document.addEventListener('keydown', saveKeyPressed);
