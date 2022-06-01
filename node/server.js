@@ -88,6 +88,7 @@ isvalid(configFile, {
           'id': { type: String, required: true },
           'name': { type: String, required: true },
           'image': { type: String, required: true },
+          'nightLights': { type: String, required: false },
           'horizonY': { type: Number, required: true },
           'endTime': { type: String, required: false },
           'animations': {

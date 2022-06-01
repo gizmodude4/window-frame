@@ -7,6 +7,7 @@
           "id": "peaceful-valley",
           "name": "Peaceful Valley",
           "image": "assets/peaceful-valley.png",
+          "nightLights": "assets/peaceful-valley-lights-transparent-exp.png",
           "horizonY": 0.25,
           "animations": [
             {
