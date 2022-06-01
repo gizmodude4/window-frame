@@ -59,7 +59,8 @@ const SPRITE_LIMIT = 30;
 const spritePool = [];
 
 // Sprites
-const landcape = new PIXI.Sprite();
+const landscape = new PIXI.Sprite();
+const lights = new PIXI.Sprite();
 const backgroundSprites = new PIXI.Container();
 const midgroundSprites = new PIXI.Container();
 const foregroundSprites = new PIXI.Container();
@@ -92,10 +93,8 @@ let backgroundShader;
 
 /*
 TODO:
-- change SVG to have an X when muted
+- Size correctly for mobile
 - If we change the volume on a slider, do we want to unmute?
-
-- light shaders
 - random animations
 */
 
@@ -265,17 +264,26 @@ setIconsEnabled();
 
 // The `load` method loads the queue of resources, and calls the passed in callback called once all
 // resources have loaded.
-loader.load((_, resources) => {
-    // set the anchor point so the texture is centered on the sprite
-    landcape.anchor.set(0.5);
-    landcape.filters = [foregroundDayNightShader]
-    landcape.texture = loader.resources[scenes[sceneIndex].image].texture;
+loader.load((_, resources) => {   
+    landscape.anchor.set(0.5);
+    landscape.filters = [foregroundDayNightShader]
+    landscape.texture = loader.resources[scenes[sceneIndex].image].texture;
+    if (scenes[sceneIndex].nightLights) {
+        lights.texture = loader.resources[scenes[sceneIndex].nightLights].texture;
+        foregroundDayNightShader.uniforms.lights = lights._texture;
+        lights.position.set(0,0);
+    } else {
+        lights.texture = null;
+        foregroundDayNightShader.uniforms.lights = null;
+    }
+    lights.visible = false;
     horizonY = scenes[sceneIndex].horizonY;
+    
 
     // pass 2 colors and X coordinate for shading
     backgroundShader = new PIXI.Shader.from(null, skyDayNightShaderRaw, {
-        color1: backgroundColor1,
-        color2: backgroundColor2,
+        color1: curShaderInfo ? curShaderInfo.sky.color1 :  backgroundColor1,
+        color2: curShaderInfo ? curShaderInfo.sky.color2 :  backgroundColor2,
         horizonY: horizonY
     })
     for (let i = 0; i < SPRITE_LIMIT; i++) {
@@ -283,12 +291,15 @@ loader.load((_, resources) => {
         spritePool[spritePool.length-1].id = generateRandomId()
         app.stage.addChild(spritePool[spritePool.length-1])
     }
+    
     background = new PIXI.Mesh(quadGeometry, backgroundShader);
     app.stage.addChild(background);
     app.stage.addChild(backgroundSprites);
     app.stage.addChild(midgroundSprites);
     app.stage.addChild(foregroundSprites);
-    midgroundSprites.addChild(landcape);
+    
+    midgroundSprites.addChild(landscape);
+    midgroundSprites.addChild(lights);
     background.position.set(0, 0);
     resize();
     loadingScreen.classList.add("hide-opacity");
@@ -354,11 +365,13 @@ window.addEventListener('resize', resize);
 function resize(event) {
     app.renderer.resize(window.innerWidth, window.innerHeight);
 
-    if (landcape){
-        landcape.position.set(window.innerWidth/(window.devicePixelRatio*2), window.innerHeight/(window.devicePixelRatio*2));
-        if (landcape.height > 1) {
-            landcape.height = Math.floor(app.screen.height/window.devicePixelRatio);
-            landcape.width = Math.floor(app.screen.width/window.devicePixelRatio);
+    if (landscape){
+        landscape.position.set(window.innerWidth/(window.devicePixelRatio*2), window.innerHeight/(window.devicePixelRatio*2));
+        if (landscape.height > 1) {
+            landscape.height = Math.floor(app.screen.height/window.devicePixelRatio);
+            landscape.width = Math.floor(app.screen.width/window.devicePixelRatio);
+            lights.height = Math.floor(app.screen.height/window.devicePixelRatio);
+            lights.width = Math.floor(app.screen.width/window.devicePixelRatio);
         }
     }
 
@@ -373,12 +386,14 @@ function updateShaderInfo(time, forceRefresh = false) {
     let info = getShaderInfo(time, sunInfo, forceRefresh)
     if (info != curShaderInfo) {
         curShaderInfo = info;
-        foregroundDayNightShader.uniforms.color = info.foreground.color
-        foregroundDayNightShader.uniforms.con_sat_brt = info.foreground.con_sat_brt
-        cloudDayNightShader.uniforms.color = info.clouds.color
-        cloudDayNightShader.uniforms.con_sat_brt = info.clouds.con_sat_brt
-        backgroundShader.uniforms.color1 = info.sky.color1
-        backgroundShader.uniforms.color2 = info.sky.color2
+        foregroundDayNightShader.uniforms.color = info.foreground.color;
+        foregroundDayNightShader.uniforms.con_sat_brt = info.foreground.con_sat_brt;
+        foregroundDayNightShader.uniforms.light_strength = info.foreground.light_strength;
+        cloudDayNightShader.uniforms.color = info.clouds.color;
+        cloudDayNightShader.uniforms.con_sat_brt = info.clouds.con_sat_brt;
+        cloudDayNightShader.uniforms.light_strength = 0.0;
+        backgroundShader.uniforms.color1 = info.sky.color1;
+        backgroundShader.uniforms.color2 = info.sky.color2;
     }
 }
 
@@ -399,6 +414,10 @@ function showTimeDisplay(time) {
 function loadTextures(scenes) {
     const addedTextures = new Set();
     scenes.forEach((scene) => {
+        if (scene.nightLights && !addedTextures.has(scene.nightLights)) {
+            addedTextures.add(scene.nightLights)
+            loader.add(scene.nightLights, scene.nightLights)
+        }
         if (!addedTextures.has(scene.image)) {
             addedTextures.add(scene.image)
             loader.add(scene.image, scene.image)
@@ -447,7 +466,15 @@ async function loadScene(nextSceneIndex) {
             removeAllChildren(backgroundSprites)
             removeAllChildren(foregroundSprites)
             resetSkySprites(spritePool)
-            landcape.texture = loader.resources[scenes[sceneIndex].image].texture;
+            landscape.texture = loader.resources[scenes[sceneIndex].image].texture;
+            if (scenes[sceneIndex].nightLights) {
+                lights.texture = loader.resources[scenes[sceneIndex].nightLights].texture;
+                foregroundDayNightShader.uniforms.lights = lights._texture;
+                lights.position.set(0,0);
+            } else {
+                lights.texture = null;
+                foregroundDayNightShader.uniforms.lights = null;
+            }
             horizonY = scenes[sceneIndex].horizonY;
             backgroundShader.uniforms.horizonY = horizonY;
             await playSceneAudio()
@@ -475,6 +502,7 @@ async function playSceneAudio() {
 
 function isSceneMeaningfullyDifferent(prevSceneIndex, curSceneIndex) {
     return scenes[curSceneIndex].image != scenes[prevSceneIndex].image ||
+           scenes[curSceneIndex].nightLights != scenes[prevSceneIndex].nightLights ||
            scenes[curSceneIndex].horizonY != scenes[prevSceneIndex].horizonY ||
            areAnimationsMeaningfullyDifferent(scenes[prevSceneIndex].animations, scenes[curSceneIndex].animations)
 }

@@ -14,12 +14,12 @@
     <script id='foregroundDayNightShader' type='x-shader/x-fragment' >
       varying vec2 vTextureCoord;
       uniform sampler2D uSampler;
-      
-      // The texture.
-      uniform sampler2D u_texture;
+
+      uniform sampler2D lights;
 
       uniform vec3 color;
       uniform float con_sat_brt[5];
+      uniform float light_strength;
 
       #define contrast      con_sat_brt[0]
       #define saturation    con_sat_brt[1]
@@ -42,6 +42,11 @@
         out_col = out_col + pop_strength * max(grey - pop_threshold, 0.0);
         // add brightness
         out_col = out_col + brightness;
+
+        // lights for night time, breh
+        vec3 lights_col = texture2D(lights, vTextureCoord).rgb;
+        grey = light_strength * dot(lights_col, vec3(0.333));
+        out_col = mix(out_col, tex.rgb * normalize(lights_col + 0.05) * 3.0, grey);
 
         gl_FragColor = vec4(out_col, tex.a);
       }

@@ -8,6 +8,7 @@ const SAT = 5;
 const BRT = 6;
 const POPS = 7;
 const POPT = 8;
+const LIGHT_STRENGTH = 9;
 
 const COLOR1_R = 1;
 const COLOR1_G = 2;
@@ -26,15 +27,18 @@ export const getShaderInfo = (now, sunInfo, forceRefresh = false) => {
         return {
             foreground: {
                 color: [30/255, 120/255, 225/255],
-                con_sat_brt: [0.6, 1.0, -0.2, 0.8, 0.65]
+                con_sat_brt: [0.6, 1.0, -0.2, 0.8, 0.65],
+                light_strength: 0.0
             },
             clouds: {
                 color: [30/255, 120/255, 225/255],
-                con_sat_brt: [0.6, 1.0, -0.4, 0.8, 0.68]
+                con_sat_brt: [0.6, 1.0, -0.4, 0.8, 0.68],
+                light_strength: 0.0
             },
             sky: {
                 color1: [0, 1/255, 26/255],
-                color2: [4/255, 7/255, 48/255]
+                color2: [4/255, 7/255, 48/255],
+                light_strength: 0.0
             }
         }
     }
@@ -51,7 +55,8 @@ export const getShaderInfo = (now, sunInfo, forceRefresh = false) => {
                 lerp(dayNightShaderColors[mix.index][BRT], dayNightShaderColors[(mix.index+1)%dayNightShaderColors.length][BRT], mix.mix),
                 lerp(dayNightShaderColors[mix.index][POPS], dayNightShaderColors[(mix.index+1)%dayNightShaderColors.length][POPS], mix.mix),
                 lerp(dayNightShaderColors[mix.index][POPT], dayNightShaderColors[(mix.index+1)%dayNightShaderColors.length][POPT], mix.mix),
-            ]
+            ],
+            light_strength: dayNightShaderColors[mix.index][LIGHT_STRENGTH]
         },
         clouds: {
             color: [
@@ -65,7 +70,8 @@ export const getShaderInfo = (now, sunInfo, forceRefresh = false) => {
                 lerp(cloudShaderColors[mix.index][BRT], cloudShaderColors[(mix.index+1)%cloudShaderColors.length][BRT], mix.mix),
                 lerp(cloudShaderColors[mix.index][POPS], cloudShaderColors[(mix.index+1)%cloudShaderColors.length][POPS], mix.mix),
                 lerp(cloudShaderColors[mix.index][POPT], cloudShaderColors[(mix.index+1)%cloudShaderColors.length][POPT], mix.mix),
-            ]
+            ],
+            light_strength: 0
         },
         sky: {
             color1: [
@@ -131,20 +137,20 @@ function getMidnightTomorrow() {
 function createDayNightMap(now, sunInfo) {
     const midnight = fromMilitaryTime(now, "00:00");
     return [
-        [midnight, 30, 120, 225, 0.6, 1.0, -0.2, 0.8, 0.68], // midnight
-        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.2, 0.7, 0.65], // late night
-        [sunInfo.nightEnd, 80, 80, 185, 0.8, 0.6, -0.15, 0.2, 0.8], // night end
+        [midnight, 30, 120, 225, 0.6, 1.0, -0.2, 0.8, 0.68, 1.0], // midnight
+        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.2, 0.7, 0.65, 1.0], // late night
+        [sunInfo.nightEnd, 80, 80, 185, 0.8, 0.6, -0.15, 0.2, 0.8, 1.0], // night end
         // add dawn?
-        [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6], // sunrise peak
-        [sunInfo.sunriseEnd, 160, 145, 100, 1.2, 0.65, 0.03, 0.0, 1.0], //sunrise end
-        [sunInfo.goldenHourEnd, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0], // golden hour end
-        [sunInfo.solarNoon, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0], // noon,
+        [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6, 0.0], // sunrise peak
+        [sunInfo.sunriseEnd, 160, 145, 100, 1.2, 0.65, 0.03, 0.0, 1.0, 0.0], //sunrise end
+        [sunInfo.goldenHourEnd, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0, 0.0], // golden hour end
+        [sunInfo.solarNoon, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0, 0.0], // noon,
         //[fromMilitaryTime("15:00"), 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0], // late afternoon
-        [sunInfo.goldenHour, 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0], //golden hour start
-        [sunInfo.sunsetStart, 145, 120, 90, 1.1, 0.75, 0.0, 0.0, 1.0], //sunset start
-        [sunInfo.sunset, 240, 190, 100, 1.0, 0.8, -0.05, 0.2, 0.80], //sunset peak
-        [sunInfo.dusk, 100, 100, 140, 0.8, 0.6, -0.15, 0.2, 0.70], //sunsetEnd
-        [sunInfo.night, 80, 80, 185, 0.8, 0.6, -0.15, 0.2, 0.80], //sunsetEnd
+        [sunInfo.goldenHour, 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0], //golden hour start
+        [sunInfo.sunsetStart, 145, 120, 90, 1.1, 0.75, 0.0, 0.0, 1.0, 0.0], //sunset start
+        [sunInfo.sunset, 240, 190, 100, 1.0, 0.8, -0.05, 0.2, 0.80, 1.0], //sunset peak
+        [sunInfo.dusk, 100, 100, 140, 0.8, 0.6, -0.15, 0.2, 0.70, 1.0], //sunsetEnd
+        [sunInfo.night, 80, 80, 185, 0.8, 0.6, -0.15, 0.2, 0.80, 1.0], //sunsetEnd
     ]
 }
 
