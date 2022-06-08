@@ -6,6 +6,7 @@ export const getSunInfo = (curTime, pos) => {
             lon: -98.5795,
             tz: "America/Chicago"
         }
+        
         timeToUse = luxon.DateTime.now({hour: 0, minute: 0, second: 0, millisecond: 0}).toJSDate()
     } else {
         timeToUse = curTime.set({hour: 0, minute: 0, second: 0, millisecond: 0}).toJSDate()
