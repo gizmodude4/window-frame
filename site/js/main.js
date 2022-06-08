@@ -14,6 +14,7 @@ import { getConfigProperty, updateConfig } from './config.js';
 import { initializeBackend, getCollections, getGeoData, sendSocketMessage } from './backendApiManager.js';
 
 const foregroundDayNightShaderRaw = document.getElementById("foregroundDayNightShader").innerHTML;
+const foregroundDayNightVertexShaderRaw = document.getElementById("foregroundDayNightVertexShader").innerHTML;
 const skyDayNightShaderRaw = document.getElementById("skyDayNightShader").innerHTML;
 const timeDisplay = document.getElementById("time");
 const loadingScreen = document.getElementById("loading");
@@ -75,8 +76,8 @@ document.getElementById("body").appendChild(app.view);
 
 // Shaders
 var curShaderInfo = getShaderInfo(now, sunInfo)
-const foregroundDayNightShader = new PIXI.Filter(null, foregroundDayNightShaderRaw, curShaderInfo.foreground);
-const cloudDayNightShader = new PIXI.Filter(null, foregroundDayNightShaderRaw, curShaderInfo.clouds);
+const foregroundDayNightShader = new PIXI.Filter(foregroundDayNightVertexShaderRaw, foregroundDayNightShaderRaw, curShaderInfo.foreground);
+const cloudDayNightShader = new PIXI.Filter(foregroundDayNightVertexShaderRaw, foregroundDayNightShaderRaw, curShaderInfo.clouds);
 
 // background
 const backgroundColor1 = [0, 1/255, 26/255]
@@ -93,8 +94,6 @@ let backgroundShader;
 
 /*
 TODO:
-- Size correctly for mobile
-- If we change the volume on a slider, do we want to unmute?
 - random animations
 */
 
@@ -244,8 +243,8 @@ ambianceIcon.onclick = () => {
     setSvgActive(ambianceIcon, !muted);
     updateConfig({ambianceMuted: muted});
     const volPercent = ambianceSlider.value/100;
-    const newVol = muted ? 0 : volPercent * scenes[sceneIndex].stream.volume/100;
     scenes[sceneIndex].sounds.forEach(sound => {
+        const newVol = muted ? 0 : volPercent * sound.volume/100;
         setCurrentlyPlayingSoundVolume(sound, newVol);
     });
 }
@@ -271,6 +270,8 @@ loader.load((_, resources) => {
     if (scenes[sceneIndex].nightLights) {
         lights.texture = loader.resources[scenes[sceneIndex].nightLights].texture;
         foregroundDayNightShader.uniforms.lights = lights._texture;
+        foregroundDayNightShader.uniforms.lightsSize = [1.0, 1.0];
+        foregroundDayNightShader.uniforms.lightsOffset = [0.0, 0.0];
         lights.position.set(0,0);
     } else {
         lights.texture = null;
@@ -368,12 +369,24 @@ function resize(event) {
     if (landscape){
         landscape.position.set(window.innerWidth/(window.devicePixelRatio*2), window.innerHeight/(window.devicePixelRatio*2));
         if (landscape.height > 1) {
-            landscape.height = Math.floor(app.screen.height/window.devicePixelRatio);
-            landscape.width = Math.floor(app.screen.width/window.devicePixelRatio);
-            lights.height = Math.floor(app.screen.height/window.devicePixelRatio);
-            lights.width = Math.floor(app.screen.width/window.devicePixelRatio);
+            if (window.innerWidth > window.innerHeight) {
+                landscape.height = Math.floor(app.screen.height/window.devicePixelRatio);
+                landscape.width = Math.floor(app.screen.width/window.devicePixelRatio);
+                lights.height = Math.floor(app.screen.height/window.devicePixelRatio);
+                lights.width = Math.floor(app.screen.width/window.devicePixelRatio);
+                foregroundDayNightShader.uniforms.lightsSize = [1.0, 1.0];
+                foregroundDayNightShader.uniforms.lightsOffset = [0.0, 0.0];
+            } else {
+                landscape.height = Math.floor(app.screen.height/window.devicePixelRatio);
+                landscape.width = (landscape.height * landscape.texture.width) / landscape.texture.height;
+                const lightsWidth = (app.screen.height * lights.texture.width) / lights.texture.height * window.devicePixelRatio;
+                const screenWidth = Math.floor(app.screen.width/window.devicePixelRatio);
+                foregroundDayNightShader.uniforms.lightsSize = [screenWidth/lightsWidth, 1.0];
+                foregroundDayNightShader.uniforms.lightsOffset = [(1.0 - screenWidth/lightsWidth)/2, 0.0];
+            }
         }
     }
+
 
     backgroundSizeBuffer.update(new Float32Array([0, 0, window.innerWidth, 0, window.innerWidth, window.innerHeight, 0, window.innerHeight]))
     
@@ -477,7 +490,7 @@ async function loadScene(nextSceneIndex) {
             }
             horizonY = scenes[sceneIndex].horizonY;
             backgroundShader.uniforms.horizonY = horizonY;
-            await playSceneAudio()
+            await playSceneAudio();
             loadingScreen.removeEventListener(transitionEndEventName, loadSceneAfterTransition);
             loadingScreen.classList.add("hide-opacity");
             setTimeout(() => {processing = false}, 1000);
@@ -569,7 +582,7 @@ function processEvent(event) {
             loadNextScene();
             break;    
         default:
-            console.log('Unknown action type: ' + action);
+            console.debug('Unknown action type: ' + action);
             break;
     }
 }

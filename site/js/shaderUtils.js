@@ -125,13 +125,13 @@ function getTimeDiff(date1, date2) {
 
 function getMixRange(index, dayNightShaderColors) {
     if (index == dayNightShaderColors.length - 1) {
-        return getMidnightTomorrow() - dayNightShaderColors[index][0]
+        return getDifferenceBetweenDateAndMidnightTomorrow(dayNightShaderColors[index][0]);
     }
-    return dayNightShaderColors[index+1][0] - dayNightShaderColors[index][0]
+    return getTimeDiff(dayNightShaderColors[index+1][0], dayNightShaderColors[index][0]);
 }
 
-function getMidnightTomorrow() {
-    return luxon.DateTime.now().plus({days: 1}).set({hour: 0, minute: 0, second: 0, millisecond: 0});
+function getDifferenceBetweenDateAndMidnightTomorrow(date) {
+    return 24*60*60*1000 - (date.hour * 60 * 60 + date.minute * 60 + date.second) * 1000
 }
 
 function createDayNightMap(now, sunInfo) {
@@ -140,12 +140,10 @@ function createDayNightMap(now, sunInfo) {
         [midnight, 30, 120, 225, 0.6, 1.0, -0.2, 0.8, 0.68, 1.0], // midnight
         [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.2, 0.7, 0.65, 1.0], // late night
         [sunInfo.nightEnd, 80, 80, 185, 0.8, 0.6, -0.15, 0.2, 0.8, 1.0], // night end
-        // add dawn?
         [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6, 0.0], // sunrise peak
         [sunInfo.sunriseEnd, 160, 145, 100, 1.2, 0.65, 0.03, 0.0, 1.0, 0.0], //sunrise end
         [sunInfo.goldenHourEnd, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0, 0.0], // golden hour end
-        [sunInfo.solarNoon, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0, 0.0], // noon,
-        //[fromMilitaryTime("15:00"), 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0], // late afternoon
+        [sunInfo.solarNoon, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0, 0.0], // noon
         [sunInfo.goldenHour, 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0], //golden hour start
         [sunInfo.sunsetStart, 145, 120, 90, 1.1, 0.75, 0.0, 0.0, 1.0, 0.0], //sunset start
         [sunInfo.sunset, 240, 190, 100, 1.0, 0.8, -0.05, 0.2, 0.80, 1.0], //sunset peak
@@ -160,12 +158,10 @@ function createDayNightMapClouds(now, sunInfo) {
         [midnight, 30, 120, 225, 0.6, 1.0, -0.4, 0.8, 0.68], // midnight
         [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.4, 0.7, 0.65], // late night
         [sunInfo.nightEnd, 50, 50, 155, 0.8, 0.6, -0.15, 0.0, 0.80], // night end
-        // add dawn?
         [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6], // sunrise peak
         [sunInfo.sunriseEnd, 160, 145, 100, 1.2, 0.65, 0.03, 0.0, 1.0], //sunrise end
         [sunInfo.goldenHourEnd, 128, 128, 128, 1.2, 0.85, 0.0, 0.0, 1.0], // golden hour end
-        [sunInfo.solarNoon, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0], // noon,
-        //[fromMilitaryTime("15:00"), 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0], // late afternoon
+        [sunInfo.solarNoon, 128, 128, 128, 1.2, 0.85, 0.05, 0.0, 1.0], // noon
         [sunInfo.goldenHour, 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0], //golden hour start
         [sunInfo.sunsetStart, 145, 120, 90, 1.0, 0.75, 0.0, 0.0, 1.0], //sunset start
         [sunInfo.sunset, 240, 190, 100, 1.0, 0.8, -0.05, 0.2, 0.80], //sunset peak
@@ -180,12 +176,10 @@ function createDayNightMapSky(now, sunInfo) {
         [midnight, 0, 1, 26, 4, 7, 48], // midnight
         [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 0, 1, 18, 4, 7, 48], // late night
         [sunInfo.nightEnd, 0, 31, 64, 244, 69, 0], // night end
-        // add dawn?
         [sunInfo.sunrise, 105, 129, 177, 253, 169, 167], // sunrise peak
         [sunInfo.sunriseEnd, 42, 83, 135, 248, 209, 142], //sunrise end
         [sunInfo.goldenHourEnd, 2, 36, 100, 12, 111, 168], // golden hour end
-        [sunInfo.solarNoon, 33, 97, 178, 136, 183, 201], // noon,
-        //[fromMilitaryTime("15:00"), 128, 128, 128, 1.0, 1.0, 0.0, 0.0, 1.0], // late afternoon
+        [sunInfo.solarNoon, 33, 97, 178, 136, 183, 201], // noon
         [sunInfo.goldenHour, 33, 97, 178, 35, 141, 175], //golden hour start
         [sunInfo.sunsetStart, 35, 141, 175, 254, 177, 105], //sunset start
         [sunInfo.sunset, 88, 86, 125, 255, 146, 107], //sunset peak

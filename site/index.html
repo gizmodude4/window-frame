@@ -13,6 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/luxon@2.4.0/build/global/luxon.min.js"></script>
     <script id='foregroundDayNightShader' type='x-shader/x-fragment' >
       varying vec2 vTextureCoord;
+      varying vec2 vLightsCoord;
       uniform sampler2D uSampler;
 
       uniform sampler2D lights;
@@ -44,11 +45,49 @@
         out_col = out_col + brightness;
 
         // lights for night time, breh
-        vec3 lights_col = texture2D(lights, vTextureCoord).rgb;
+        vec3 lights_col = texture2D(lights, vLightsCoord).rgb;
         grey = light_strength * dot(lights_col, vec3(0.333));
         out_col = mix(out_col, tex.rgb * normalize(lights_col + 0.05) * 3.0, grey);
 
         gl_FragColor = vec4(out_col, tex.a);
+      }
+    </script>
+    <script id='foregroundDayNightVertexShader' type='x-shader/x-vertex' >
+      attribute vec2 aVertexPosition;
+
+      uniform mat3 projectionMatrix;
+      uniform vec2 lightsSize;
+      uniform vec2 lightsOffset;
+
+      varying vec2 vTextureCoord;
+      varying vec2 vLightsCoord;
+
+      uniform vec4 inputSize;
+      uniform vec4 outputFrame;
+
+      vec4 filterVertexPosition( void )
+      {
+          vec2 position = aVertexPosition * max(outputFrame.zw, vec2(0.)) + outputFrame.xy;
+
+          return vec4((projectionMatrix * vec3(position, 1.0)).xy, 0.0, 1.0);
+      }
+
+      vec2 filterTextureCoord( void )
+      {
+          return aVertexPosition * (outputFrame.zw * inputSize.zw);
+      }
+
+      vec2 filterLightsCoord( void )
+      {
+          return aVertexPosition * (outputFrame.zw * inputSize.zw * lightsSize) + lightsOffset;
+      }
+
+
+      void main(void)
+      {
+          gl_Position = filterVertexPosition();
+          vTextureCoord = filterTextureCoord();
+          vLightsCoord = filterLightsCoord();
       }
     </script>
     <script id='skyDayNightShader' type='x-shader/x-fragment' >
