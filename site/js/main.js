@@ -48,11 +48,13 @@ const pos = await getGeoData();
 let sunInfo = getSunInfo(now, pos);
 let horizonY = 0.5;
 
+// Forcing devicePixelRatio to 1 since this is pixel art and scaling it is fine
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 PIXI.settings.SORTABLE_CHILDREN = true;
+PIXI.settings.RESOLUTION = 1;
 const app = new PIXI.Application({
     width: window.innerWidth, height: window.innerHeight,
-    backgroundColor: 0x1099bb, resolution: window.devicePixelRatio || 1,
+    backgroundColor: 0x1099bb, resolution: 1,
     sharedTicker: true
 });
 const loader = PIXI.Loader.shared;
@@ -319,7 +321,7 @@ setInterval(() => {
         const selectedIndex = getRandomValue(selectedIndices)
         const texture = loader.resources[scenes[sceneIndex].animations[selectedIndex].image].texture
         const rand = Math.random();
-        const posY = rand * horizonY * app.screen.height/window.devicePixelRatio;
+        const posY = rand * horizonY * app.screen.height;
         const sizeMod = scenes[sceneIndex].animations[selectedIndex].sizeMod === 0 ? 1.0 :
                         scenes[sceneIndex].animations[selectedIndex].sizeMod - rand;
 
@@ -367,23 +369,21 @@ function resize(event) {
     app.renderer.resize(window.innerWidth, window.innerHeight);
 
     if (landscape){
-        landscape.position.set(window.innerWidth/(window.devicePixelRatio*2), window.innerHeight/(window.devicePixelRatio*2));
+        landscape.position.set(window.innerWidth /2, window.innerHeight /2);
         if (landscape.height > 1) {
             if (window.innerWidth > window.innerHeight) {
-                landscape.height = Math.floor(app.screen.height/window.devicePixelRatio);
-                landscape.width = Math.floor(app.screen.width/window.devicePixelRatio);
-                lights.height = Math.floor(app.screen.height/window.devicePixelRatio);
-                lights.width = Math.floor(app.screen.width/window.devicePixelRatio);
-                foregroundDayNightShader.uniforms.lightsSize = [1.0, 1.0];
-                foregroundDayNightShader.uniforms.lightsOffset = [0.0, 0.0];
+                landscape.height = Math.floor(app.screen.height);
+                landscape.width = Math.floor(app.screen.width);
             } else {
-                landscape.height = Math.floor(app.screen.height/window.devicePixelRatio);
+                landscape.height = Math.floor(app.screen.height);
                 landscape.width = (landscape.height * landscape.texture.width) / landscape.texture.height;
-                const lightsWidth = (app.screen.height * lights.texture.width) / lights.texture.height * window.devicePixelRatio;
-                const screenWidth = Math.floor(app.screen.width/window.devicePixelRatio);
-                foregroundDayNightShader.uniforms.lightsSize = [screenWidth/lightsWidth, 1.0];
-                foregroundDayNightShader.uniforms.lightsOffset = [(1.0 - screenWidth/lightsWidth)/2, 0.0];
             }
+            const lightsWidth = landscape.width;
+            const lightsHeight = landscape.height;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            foregroundDayNightShader.uniforms.lightsOffset = [Math.max(0.0, (1.0 - screenWidth/lightsWidth)/2), Math.max(0.0, (1.0 - screenHeight/lightsHeight)/2)];
+            foregroundDayNightShader.uniforms.lightsSize = [screenWidth/lightsWidth, screenHeight/lightsHeight];
         }
     }
 
