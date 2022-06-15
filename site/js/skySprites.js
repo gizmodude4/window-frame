@@ -36,7 +36,7 @@ export function addSkySprite(texture, posY, movement, screenWidth, sizeMod, spri
     if (onScreenSprites.length < maxSprites && spritePool.length > 0) {
         console.debug("getting a new sprite");
         const newSprite = spritePool.pop();
-        if (newSprite.x < (window.innerWidth/window.devicePixelRatio) && newSprite.x > 0) {
+        if (newSprite.x < window.innerWidth && newSprite.x > 0) {
             console.debug("WEEWOO, we got one that's currently on screen");
             console.debug(`${newSprite.x} ${newSprite.y}`)
         }
@@ -72,7 +72,7 @@ export function resizeSkySprites(widthDiff, heightDiff, initialWidthDiff, initia
 
 function isSpriteDoneScrolling(sprite, scrollingRight = true) {
     if (scrollingRight) {
-        return (sprite.position.x - sprite.width) >= (window.innerWidth/window.devicePixelRatio)
+        return (sprite.position.x - sprite.width) >= window.innerWidth
     }
     return (sprite.position.x + sprite.width) <= 0
 }
