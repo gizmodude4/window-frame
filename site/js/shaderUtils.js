@@ -1,3 +1,5 @@
+import { timeLerp, getTimeDiff, fromMilitaryTime } from './dateTimeUtils.js';
+
 const lerp = (x, y, a) => x * (1 - a) + y * a;
 
 const R = 1;
@@ -93,9 +95,9 @@ function getFilterIndexAndMix(now, sunInfo, forceRefresh = false) {
         return null
     }
     if (!dayNightShaderColors || !cloudShaderColors || !skyShaderColors || forceRefresh) {
-        dayNightShaderColors = createDayNightMap(now, sunInfo);
-        cloudShaderColors = createDayNightMapClouds(now, sunInfo);
-        skyShaderColors = createDayNightMapSky(now, sunInfo);
+        dayNightShaderColors = createDayNightMap(sunInfo);
+        cloudShaderColors = createDayNightMapClouds(sunInfo);
+        skyShaderColors = createDayNightMapSky(sunInfo);
     }
 
     let minIndex = -1;
@@ -116,13 +118,6 @@ function getFilterIndexAndMix(now, sunInfo, forceRefresh = false) {
     }
 }
 
-function getTimeDiff(date1, date2) {
-    const hoursDiff = date1.hour - date2.hour;
-    const minutesDiff = date1.minute - date2.minute;
-    const secondsDiff = date1.second - date2.second;
-    return (hoursDiff * 60 * 60 + minutesDiff * 60 + secondsDiff)*1000;
-}
-
 function getMixRange(index, dayNightShaderColors) {
     if (index == dayNightShaderColors.length - 1) {
         return getDifferenceBetweenDateAndMidnightTomorrow(dayNightShaderColors[index][0]);
@@ -134,11 +129,11 @@ function getDifferenceBetweenDateAndMidnightTomorrow(date) {
     return 24*60*60*1000 - (date.hour * 60 * 60 + date.minute * 60 + date.second) * 1000
 }
 
-function createDayNightMap(now, sunInfo) {
-    const midnight = fromMilitaryTime(now, "00:00");
+function createDayNightMap(sunInfo) {
+    const midnight = fromMilitaryTime("00:00");
     return [
         [midnight, 30, 120, 225, 0.6, 1.0, -0.2, 0.8, 0.68, 1.0], // midnight
-        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.2, 0.7, 0.65, 1.0], // late night
+        [timeLerp(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.2, 0.7, 0.65, 1.0], // late night
         [sunInfo.nightEnd, 80, 80, 185, 0.8, 0.6, -0.15, 0.2, 0.8, 1.0], // night end
         [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6, 0.0], // sunrise peak
         [sunInfo.sunriseEnd, 160, 145, 100, 1.2, 0.65, 0.03, 0.0, 1.0, 0.0], //sunrise end
@@ -152,11 +147,11 @@ function createDayNightMap(now, sunInfo) {
     ]
 }
 
-function createDayNightMapClouds(now, sunInfo) {
-    const midnight = fromMilitaryTime(now, "00:00");
+function createDayNightMapClouds(sunInfo) {
+    const midnight = fromMilitaryTime("00:00");
     return [
         [midnight, 30, 120, 225, 0.6, 1.0, -0.4, 0.8, 0.68], // midnight
-        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.4, 0.7, 0.65], // late night
+        [timeLerp(midnight, sunInfo.nightEnd, 0.5), 40, 125, 215, 0.65, 0.9, -0.4, 0.7, 0.65], // late night
         [sunInfo.nightEnd, 50, 50, 155, 0.8, 0.6, -0.15, 0.0, 0.80], // night end
         [sunInfo.sunrise, 125, 70, 175, 1.0, 0.85, -0.10, -0.5, 0.6], // sunrise peak
         [sunInfo.sunriseEnd, 160, 145, 100, 1.2, 0.65, 0.03, 0.0, 1.0], //sunrise end
@@ -170,11 +165,11 @@ function createDayNightMapClouds(now, sunInfo) {
     ]
 }
 
-function createDayNightMapSky(now, sunInfo) {
-    const midnight = fromMilitaryTime(now, "00:00");
+function createDayNightMapSky(sunInfo) {
+    const midnight = fromMilitaryTime("00:00");
     return [
         [midnight, 0, 1, 26, 4, 7, 48], // midnight
-        [getTimeNear(midnight, sunInfo.nightEnd, 0.5), 0, 1, 18, 4, 7, 48], // late night
+        [timeLerp(midnight, sunInfo.nightEnd, 0.5), 0, 1, 18, 4, 7, 48], // late night
         [sunInfo.nightEnd, 0, 31, 64, 244, 69, 0], // night end
         [sunInfo.sunrise, 105, 129, 177, 253, 169, 167], // sunrise peak
         [sunInfo.sunriseEnd, 42, 83, 135, 248, 209, 142], //sunrise end
@@ -186,16 +181,4 @@ function createDayNightMapSky(now, sunInfo) {
         [sunInfo.dusk, 6, 21, 44, 190, 149, 143], //sunsetEnd
         [sunInfo.night, 2, 10, 30, 21, 32, 62], //sunsetEnd
     ]
-}
-
-function fromMilitaryTime(now, time) {
-    let split = time.split(":")
-    return luxon.DateTime.now().set({hour: split[0], minute: split[1], second: 0, millisecond: 0});
-}
-
-function getTimeNear(earlierTime, laterTime, percentage) {
-    let diff = getTimeDiff(laterTime, earlierTime);
-    return luxon.DateTime.now()
-        .set({hour: 0, minute: 0, second: 0, millisecond: 0})
-        .plus({millisecond: Math.floor(percentage * diff)});
 }
