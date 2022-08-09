@@ -102,3 +102,11 @@ venv.bak/
 
 # Node modules
 node_modules
+
+# Local Liquidsoap and Icecast configs
+icecast.xml
+*.liq
+log/
+
+# Local startup file
+*.bat
