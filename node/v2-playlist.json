@@ -42,7 +42,7 @@
             }
           ],
           "stream": {
-            "url": "https://usa9.fastcast4u.com/proxy/jamz?mp=/1",
+            "url": "http://127.0.0.1:8002/stream",
             "volume": 100,
             "effects": [
               {

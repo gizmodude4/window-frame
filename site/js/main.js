@@ -3,15 +3,14 @@ import { processSkySprites, addSkySprite, resetSkySprites, resizeSkySprites } fr
 import { getShaderInfo } from './shaderUtils.js';
 import {
     initializeAudio,
-    playStream,
-    playSounds,
     setCurrentlyPlayingStreamVolume,
     setCurrentlyPlayingSoundVolume,
     disableEffects,
     reenableEffects } from './audioManager.js';
-import { initializeScenes } from './sceneManager.js'
+import { initializeScenes, playSceneAudio, isSceneMeaningfullyDifferent } from './sceneManager.js'
 import { getConfigProperty, updateConfig } from './config.js';
-import { initializeBackend, getCollections, getGeoData, sendSocketMessage } from './backendApiManager.js';
+import { initializeBackend, getCollections, getGeoData } from './backendApiManager.js';
+import { getMetadata } from './metadataUpdater.js';
 
 const foregroundDayNightShaderRaw = document.getElementById("foregroundDayNightShader").innerHTML;
 const foregroundDayNightVertexShaderRaw = document.getElementById("foregroundDayNightVertexShader").innerHTML;
@@ -21,7 +20,6 @@ const loadingScreen = document.getElementById("loading");
 const artistMetadata = document.getElementById("artist-metadata");
 const longPressTime = 3000;
 const stream = document.getElementById('player');
-const isChromium = window.chrome ? true : false;
 const transitionEndEventName = getTransitionEndEventName();
 let processing = false;
 const initialHeight = window.innerHeight;
@@ -29,17 +27,13 @@ const initialWidth = window.innerWidth;
 let curHeight = window.innerHeight;
 let curWidth = window.innerWidth;
 
-let backendServerUrl = 'http://localhost:8080';
-let backendServerWebsocket = 'ws://localhost:8080'
+let backendServerUrl = 'https://backend.lazyday.cafe/supersecretbackend';
 if (location.origin === 'https://lazyday.cafe') {
     backendServerUrl = 'https://backend.lazyday.cafe';
-    backendServerWebsocket = 'wss://backend.lazyday.cafe';
 }
 
 initializeAudio(stream);
-await initializeBackend(backendServerUrl, backendServerWebsocket, (metadata) => {
-    artistMetadata.innerText = metadata.data
-});
+initializeBackend(backendServerUrl);
 
 let now = luxon.DateTime.now();
 let shaderOverride = getTime();
@@ -104,7 +98,7 @@ var modal = document.getElementById("consent-modal");
 var btn = document.getElementById("consent-button");
 btn.onclick = () => {
     modal.style.display = "none";
-    playSceneAudio();
+    updateSceneAudio();
 } 
 
 const sideBar = document.querySelector('.side-bar');
@@ -490,49 +484,23 @@ async function loadScene(nextSceneIndex) {
             }
             horizonY = scenes[sceneIndex].horizonY;
             backgroundShader.uniforms.horizonY = horizonY;
-            await playSceneAudio();
+            await updateSceneAudio();
             loadingScreen.removeEventListener(transitionEndEventName, loadSceneAfterTransition);
             loadingScreen.classList.add("hide-opacity");
             setTimeout(() => {processing = false}, 1000);
         });
         loadingScreen.classList.remove("hide-opacity");
     } else {
-        await playSceneAudio()
+        await updateSceneAudio()
         processing = false;
     }
 }
 
-// Scene display logic
-async function playSceneAudio() {
-    const streamMuted = getConfigProperty("streamMuted");
-    const streamVol = streamMuted ? 0 : scenes[sceneIndex].stream.volume/100 * getConfigProperty("streamVolume") / 100;
-    await playStream(scenes[sceneIndex].stream.url, streamVol, scenes[sceneIndex].stream.effects, isChromium)
-    const ambianceMuted = getConfigProperty("ambianceMuted");
-    const ambianceVol = ambianceMuted ? 0 : getConfigProperty("ambianceVolume")/100
-    await playSounds(scenes[sceneIndex].sounds, ambianceVol);
-    sendSocketMessage(scenes[sceneIndex].stream.url);
-}
-
-function isSceneMeaningfullyDifferent(prevSceneIndex, curSceneIndex) {
-    return scenes[curSceneIndex].image != scenes[prevSceneIndex].image ||
-           scenes[curSceneIndex].nightLights != scenes[prevSceneIndex].nightLights ||
-           scenes[curSceneIndex].horizonY != scenes[prevSceneIndex].horizonY ||
-           areAnimationsMeaningfullyDifferent(scenes[prevSceneIndex].animations, scenes[curSceneIndex].animations)
-}
-
-function areAnimationsMeaningfullyDifferent(prevAnimations, curAnimations) {
-    if (prevAnimations.length != curAnimations.length) {
-        return true;
-    }
-
-    const prevAnimationsImages = [];
-    const curAnimationsImages = [];
-    for (let i = 0; i < prevAnimations.length; i++) {
-        prevAnimationsImages.push(prevAnimations[i].image)
-        curAnimationsImages.push(curAnimations[i].image)
-    }
-
-    return prevAnimationsImages.filter(x => !curAnimationsImages.includes(x)).length > 0;
+async function updateSceneAudio() {
+    await playSceneAudio(scenes[sceneIndex]);
+    getMetadata(backendServerUrl, scenes[sceneIndex].stream.url, (streamTitle) => {
+        artistMetadata.innerText = streamTitle;
+    });
 }
 
 function removeAllChildren(container) {

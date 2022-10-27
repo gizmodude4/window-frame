@@ -11,10 +11,9 @@
     "express": "^4.16.4",
     "geo-tz": "^7.0.2",
     "geoip-lite": "^1.4.5",
-    "icecast-parser": "^3.2.1",
     "isvalid": "^2.10.4",
     "minimist": "^1.2.0",
-    "ws": "^8.5.0"
+    "icecast-parser": "^3.2.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
