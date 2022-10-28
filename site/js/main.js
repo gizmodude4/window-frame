@@ -91,6 +91,10 @@ let backgroundShader;
 /*
 TODO:
 - random animations
+- more scenes
+- logo top right
+- credit link below logo
+- credit link for musician
 */
 
 // UI elements
