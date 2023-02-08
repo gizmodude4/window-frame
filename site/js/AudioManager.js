@@ -22,10 +22,13 @@ export const initializeAudio = (elem) => {
 export const createEffect = (type, config) => {
     switch (type) {
         case 'lpf':
+        case 'LPF':
             return new Pizzicato.Effects.LowPassFilter(config);
         case 'hpf':
+        case 'HPF':
             return new Pizzicato.Effects.HighPassFilter(config);
         case 'reverb':
+        case 'REVERB':
             return new Pizzicato.Effects.Reverb(config);
         default:
             throw 'Unknown effect type ' + type; 

@@ -1,0 +1,10 @@
+[Unit]
+Description=Backend API for Twitch Stream
+
+[Service]
+WorkingDirectory=/root/twitch-cafe-backend/target/
+ExecStart=java -jar twitch-backend-1.0-SNAPSHOT.jar
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

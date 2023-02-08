@@ -9,8 +9,7 @@ import {
     reenableEffects } from './audioManager.js';
 import { initializeScenes, playSceneAudio, isSceneMeaningfullyDifferent } from './sceneManager.js'
 import { getConfigProperty, updateConfig } from './config.js';
-import { initializeBackend, getCollections, getGeoData } from './backendApiManager.js';
-import { getMetadata } from './metadataUpdater.js';
+import { initializeBackend, getCollections, getGeoData, connectToWebsocket, subscribeToMetadata } from './backendApiManager.js';
 
 const foregroundDayNightShaderRaw = document.getElementById("foregroundDayNightShader").innerHTML;
 const foregroundDayNightVertexShaderRaw = document.getElementById("foregroundDayNightVertexShader").innerHTML;
@@ -26,14 +25,17 @@ const initialHeight = window.innerHeight;
 const initialWidth = window.innerWidth;
 let curHeight = window.innerHeight;
 let curWidth = window.innerWidth;
+let artistMetadataLink = "https://chillhop.com"
 
-let backendServerUrl = 'https://backend.lazyday.cafe/supersecretbackend';
+let backendServerUrl = 'http://localhost:8085/api/v1';
 if (location.origin === 'https://lazyday.cafe') {
     backendServerUrl = 'https://backend.lazyday.cafe';
 }
 
 initializeAudio(stream);
 initializeBackend(backendServerUrl);
+connectToWebsocket();
+let curWebsocketSub;
 
 let now = luxon.DateTime.now();
 let shaderOverride = getTime();
@@ -359,7 +361,6 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-
 window.addEventListener('resize', resize);
 
 // Resize function window
@@ -502,9 +503,17 @@ async function loadScene(nextSceneIndex) {
 
 async function updateSceneAudio() {
     await playSceneAudio(scenes[sceneIndex]);
-    getMetadata(backendServerUrl, scenes[sceneIndex].stream.url, (streamTitle) => {
-        artistMetadata.innerText = streamTitle;
+    if (curWebsocketSub) {
+        curWebsocketSub.unsubscribe();
+    }
+    curWebsocketSub = subscribeToMetadata(collections[collectionIndex].id, scenes[sceneIndex].id, scenes[sceneIndex].stream.url, (metadata) => {
+        artistMetadata.innerText = metadata.title;
+        artistMetadataLink = metadata.creditLink;
     });
+}
+
+function openArtistMetadataLink() {
+    window.open(artistMetadataLink, '_blank')
 }
 
 function removeAllChildren(container) {

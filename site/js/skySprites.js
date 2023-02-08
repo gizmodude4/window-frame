@@ -34,11 +34,10 @@ export function processSkySprites(app, spritePool) {
 
 export function addSkySprite(texture, posY, movement, screenWidth, sizeMod, spriteLayer, spritePool, shader) {
     if (onScreenSprites.length < maxSprites && spritePool.length > 0) {
-        console.debug("getting a new sprite");
         const newSprite = spritePool.pop();
         if (newSprite.x < window.innerWidth && newSprite.x > 0) {
-            console.debug("WEEWOO, we got one that's currently on screen");
-            console.debug(`${newSprite.x} ${newSprite.y}`)
+            console.error("WEEWOO, we got one that's currently on screen");
+            console.error(`${newSprite.x} ${newSprite.y}`)
         }
         if (sizeMod < 0.1) {
             sizeMod = 0.1;

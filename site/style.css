@@ -130,6 +130,7 @@ body, html {
   background:rgba(0, 0, 0, 0.5);
   border-radius: 10px;
   z-index: 3;
+  cursor: pointer;
 }
 
 #metadata-display{
@@ -139,6 +140,46 @@ body, html {
   position:fixed;
   width:100%;
   bottom:15px;
+}
+
+.chillhop-logo {
+  position: fixed;
+  width: 10rem;
+  display: flex;
+  flex-direction: column;
+  top: 2rem;
+  right: 0rem;
+  height: 10rem;
+}
+
+.chillhop-logo .tooltip {
+  opacity: 0;
+  display: none;
+  right: -50%;
+  left: 0rem;
+  top: 50%;
+  display: block;
+  width: 100%;
+}
+
+.chillhop-logo:hover .tooltip {
+  right: 50%;
+  transform: translateX(-50%);
+  transition: all 0.5s ease;
+  opacity: 1;
+  display: block;
+}
+
+#chillhop-icon {
+  cursor: pointer;
+  filter: invert(19%) sepia(20%) saturate(442%) hue-rotate(201deg) brightness(97%) contrast(89%) opacity(50%);
+  height: 4rem;
+  right: 2.5rem;
+  position: absolute;
+}
+
+#chillhop-icon:hover {
+  filter: invert(19%) sepia(20%) saturate(442%) hue-rotate(201deg) brightness(97%) contrast(89%) opacity(100%);
 }
 
 .side-bar {
