@@ -110,3 +110,8 @@ log/
 
 # Local startup file
 *.bat
+
+# Kotlin target directory
+kotlin/target
+.idea/
+*.iml
